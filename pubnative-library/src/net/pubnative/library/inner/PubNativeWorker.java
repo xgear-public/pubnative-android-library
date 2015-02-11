@@ -324,6 +324,9 @@ public class PubNativeWorker {
 			public void onCompletion(MediaPlayer mp) {
 				wi.played = true;
 				setInvisible(false, bannerView);
+				if (vp != null) {
+					vp.dismiss();
+				}
 				if (popupView != null) {
 					new ViewPopup(popupView).show(parentView);
 					parentView = popupView = null;
@@ -341,16 +344,17 @@ public class PubNativeWorker {
 
 	private static void showVideoPopup(View parent,
 			WorkerItem<VideoAdHolder> wi, TextureView parentTv) {
-		VideoPopup wp = new VideoPopup(wi, parentTv, videoPopupListener);
+		vp = new VideoPopup(wi, parentTv, videoPopupListener);
 		VideoAdHolder vah = (VideoAdHolder) wi.holder;
 		if (vah.backViewHolder != null) {
 			parentView = parent;
 			popupView = vah.backViewHolder.getView();
 		}
-		wp.show(parent);
+		vp.show(parent);
 		wi.fullScreen = true;
 	}
 
+	private static VideoPopup vp;
 	private static View parentView, popupView;
 
 	//
@@ -538,6 +542,7 @@ public class PubNativeWorker {
 			} else {
 				wi.mp.stop();
 			}
+			vp = null;
 		}
 
 	};

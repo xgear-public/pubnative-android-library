@@ -34,7 +34,6 @@ import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -52,8 +51,6 @@ public class VideoPopup extends ViewPopup {
 	private final TextureView parentTv;
 
 	private final Listener l;
-
-	private final FrameLayout rootView;
 
 	private final TextureView tv;
 	private final ImageView muteView;
@@ -73,12 +70,11 @@ public class VideoPopup extends ViewPopup {
 		setHeight(LayoutParams.MATCH_PARENT);
 		setFocusable(true);
 		setBackgroundDrawable(new ColorDrawable());
-		rootView = (FrameLayout) getContentView();
 		handler = new Handler();
-		tv = findViewById(rootView, R.id.view_texture);
-		muteView = findViewById(rootView, R.id.view_mute);
-		skipButtonView = findViewById(rootView, R.id.view_skip);
-		countDownView = findViewById(rootView, R.id.view_count_down);
+		tv = findViewById(getContentView(), R.id.view_texture);
+		muteView = findViewById(getContentView(), R.id.view_mute);
+		skipButtonView = findViewById(getContentView(), R.id.view_skip);
+		countDownView = findViewById(getContentView(), R.id.view_count_down);
 		//
 		tv.setOnClickListener(this);
 		muteView.setOnClickListener(this);

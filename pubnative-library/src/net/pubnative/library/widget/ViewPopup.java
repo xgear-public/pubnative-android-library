@@ -24,21 +24,22 @@ package net.pubnative.library.widget;
 import net.pubnative.library.R;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 
 public class ViewPopup extends PopupWindow implements View.OnClickListener {
 
 	private View closeView;
 
 	public ViewPopup(View view) {
-		super(view, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, true);
+		super(wrap(view), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
+				true);
 		setBackgroundDrawable(new ColorDrawable());
 		closeView = getContentView().findViewById(R.id.view_close);
-		if (closeView != null) {
-			closeView.setOnClickListener(this);
-		}
+		closeView.setOnClickListener(this);
 	}
 
 	public void show(View parent) {
@@ -53,6 +54,15 @@ public class ViewPopup extends PopupWindow implements View.OnClickListener {
 	}
 
 	protected void didClickClose() {
+		dismiss();
+	}
+
+	private static View wrap(View view) {
+		RelativeLayout rl = (RelativeLayout) LayoutInflater.from(
+				view.getContext()).inflate(R.layout.pn_view_popup, null);
+		rl.addView(view, 0, new LayoutParams(LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT));
+		return rl;
 	}
 
 }
