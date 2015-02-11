@@ -62,7 +62,7 @@ public class VideoPopup extends ViewPopup {
 	public VideoPopup(WorkerItem<VideoAdHolder> wi, TextureView parentTv,
 			Listener l) {
 		super(LayoutInflater.from(wi.getContext()).inflate(
-				R.layout.pn_view_video_popup, null));
+				R.layout.pn_view_video, null));
 		this.wi = wi;
 		this.parentTv = parentTv;
 		this.l = l;
