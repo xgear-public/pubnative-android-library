@@ -26,6 +26,7 @@ import static org.droidparts.util.ui.ViewUtils.setInvisible;
 import net.pubnative.library.R;
 import net.pubnative.library.inner.WorkerItem;
 import net.pubnative.library.model.holder.VideoAdHolder;
+import net.pubnative.library.util.MiscUtils;
 import net.pubnative.library.util.ViewUtil;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
@@ -71,7 +72,7 @@ public class VideoPopup extends ViewPopup {
 		setFocusable(true);
 		setBackgroundDrawable(new ColorDrawable());
 		handler = new Handler();
-		tv = findViewById(getContentView(), R.id.view_texture);
+		tv = findViewById(getContentView(), R.id.view_video);
 		muteView = findViewById(getContentView(), R.id.view_mute);
 		skipButtonView = findViewById(getContentView(), R.id.view_skip);
 		countDownView = findViewById(getContentView(), R.id.view_count_down);
@@ -125,9 +126,7 @@ public class VideoPopup extends ViewPopup {
 	}
 
 	private void setMuted(boolean muted) {
-		wi.setMuted(muted);
-		int resId = muted ? R.drawable.pn_ic_unmute : R.drawable.pn_ic_mute;
-		muteView.setImageResource(resId);
+		MiscUtils.setMuted(wi, muteView, muted);
 	}
 
 	private final Runnable showSkipRunnable = new Runnable() {

@@ -44,6 +44,7 @@ import net.pubnative.library.model.response.NativeAd;
 import net.pubnative.library.task.GetAdsTask;
 import net.pubnative.library.task.SendConfirmationTask;
 import net.pubnative.library.util.ImageFetcher;
+import net.pubnative.library.util.MiscUtils;
 import net.pubnative.library.util.ViewUtil;
 import net.pubnative.library.vast.VastAd;
 import net.pubnative.library.widget.VideoPopup;
@@ -253,9 +254,12 @@ public class PubNativeWorker {
 			imageFetcher.attachImage(vah.ad.bannerUrl, bannerView, reshaper, 0,
 					ifListener);
 		}
-		View playButton = vah.getView(vah.playButtonViewId);
-		if (playButton != null) {
-			setInvisible(true, playButton);
+		for (int id : new int[] { vah.playButtonViewId, vah.muteButtonViewId,
+				vah.fullScreenButtonViewId, vah.skipButtonViewId }) {
+			View btn = vah.getView(id);
+			if (btn != null) {
+				setInvisible(true, btn);
+			}
 		}
 		//
 		TextureView videoView = vah.getView(vah.videoViewId);
@@ -266,7 +270,7 @@ public class PubNativeWorker {
 				wi.mp = new MediaPlayer();
 				try {
 					wi.mp.setDataSource(vastAd.getVideoUrl());
-					initVideo(videoView, bannerView, playButton, wi);
+					initVideo(videoView, bannerView, wi);
 				} catch (Exception e) {
 					wi.mp = null;
 					onError(e);
@@ -276,21 +280,52 @@ public class PubNativeWorker {
 	}
 
 	private static void initVideo(final TextureView videoView,
-			final ImageView bannerView, final View playButton,
-			final WorkerItem<VideoAdHolder> wi) {
+			final ImageView bannerView, final WorkerItem<VideoAdHolder> wi) {
 		//
 		ViewUtil.setSize(videoView, 1, 1);
 		//
 		ViewUtil.setSurface(wi.mp, videoView);
 		//
+		final View playButton = wi.holder.getView(wi.holder.playButtonViewId);
+		final View fullScreenButton = wi.holder
+				.getView(wi.holder.fullScreenButtonViewId);
+		final View skipButton = wi.holder.getView(wi.holder.skipButtonViewId);
+		final View muteButton = wi.holder.getView(wi.holder.muteButtonViewId);
+		videoView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				showVideoPopup(videoView, wi, videoView);
+			}
+		});
 		if (playButton != null) {
 			playButton.setOnClickListener(new OnClickListener() {
 
 				@Override
-				public void onClick(View v) {
+				public void onClick(View view) {
 					setInvisible(true, playButton);
 					wi.mp.start();
 					showVideoPopup(videoView, wi, null);
+				}
+			});
+		}
+		if (skipButton != null && skipButton instanceof TextView) {
+			((TextView) skipButton).setText(wi.holder.ad.getVideoSkipButton());
+			skipButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					doSkip(wi);
+				}
+			});
+		}
+		if (muteButton != null && muteButton instanceof ImageView) {
+			muteButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					MiscUtils.setMuted(wi, (ImageView) muteButton,
+							!wi.isMuted());
 				}
 			});
 		}
@@ -314,7 +349,8 @@ public class PubNativeWorker {
 				if (startPlaying) {
 					mp.start();
 					setInvisible(true, bannerView);
-					setInvisible(false, videoView);
+					MiscUtils.setInvisible(false, videoView, fullScreenButton,
+							skipButton, muteButton);
 				}
 			}
 		});
@@ -327,17 +363,12 @@ public class PubNativeWorker {
 				if (vp != null) {
 					vp.dismiss();
 				}
+				MiscUtils.setInvisible(true, videoView, fullScreenButton,
+						skipButton, muteButton);
 				if (popupView != null) {
 					new ViewPopup(popupView).show(parentView);
 					parentView = popupView = null;
 				}
-			}
-		});
-		videoView.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				showVideoPopup(videoView, wi, videoView);
 			}
 		});
 	}
@@ -456,6 +487,12 @@ public class PubNativeWorker {
 		}
 	}
 
+	private static void doSkip(WorkerItem<?> wi) {
+		wi.mp.stop();
+		PubNative.showInPlayStoreViaDialog((Activity) wi.getContext(),
+				wi.holder.ad);
+	}
+
 	private static final Runnable checkRunnable = new Runnable() {
 
 		@Override
@@ -523,9 +560,7 @@ public class PubNativeWorker {
 		@Override
 		public void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi) {
 			didVideoPopupClose(vp, wi);
-			wi.mp.stop();
-			PubNative.showInPlayStoreViaDialog((Activity) wi.getContext(),
-					wi.holder.ad);
+			doSkip(wi);
 		}
 
 		@Override

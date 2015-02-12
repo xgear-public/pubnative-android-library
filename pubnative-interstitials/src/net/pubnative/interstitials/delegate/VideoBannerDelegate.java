@@ -58,6 +58,9 @@ public class VideoBannerDelegate extends AbstractSingleHolderListDelegate<View> 
 		holder.bannerViewId = R.id.view_banner;
 		holder.videoViewId = R.id.view_video;
 		holder.playButtonViewId = R.id.view_play;
+		holder.fullScreenButtonViewId = R.id.view_full_screen;
+		holder.muteButtonViewId = R.id.view_mute;
+		holder.skipButtonViewId = R.id.view_skip;
 		//
 		interstitialView = new InterstitialView(act);
 		holder.backViewHolder = new NativeAdHolder(interstitialView);
