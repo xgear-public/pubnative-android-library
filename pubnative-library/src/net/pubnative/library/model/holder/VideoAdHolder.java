@@ -31,6 +31,7 @@ public class VideoAdHolder extends AdHolder<NativeAd> {
 
 	public int videoViewId;
 	public int playButtonViewId;
+	public int countDownViewId;
 	public int fullScreenButtonViewId;
 	public int skipButtonViewId;
 	public int muteButtonViewId;

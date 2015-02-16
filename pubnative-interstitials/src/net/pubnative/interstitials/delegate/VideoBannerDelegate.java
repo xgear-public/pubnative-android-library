@@ -60,6 +60,7 @@ public class VideoBannerDelegate extends AbstractSingleHolderListDelegate<View> 
 		holder.playButtonViewId = R.id.view_play;
 		holder.fullScreenButtonViewId = R.id.view_full_screen;
 		holder.muteButtonViewId = R.id.view_mute;
+		holder.countDownViewId = R.id.view_count_down;
 		holder.skipButtonViewId = R.id.view_skip;
 		//
 		interstitialView = new InterstitialView(act);

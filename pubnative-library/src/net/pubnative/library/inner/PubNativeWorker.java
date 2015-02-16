@@ -47,6 +47,7 @@ import net.pubnative.library.util.ImageFetcher;
 import net.pubnative.library.util.MiscUtils;
 import net.pubnative.library.util.ViewUtil;
 import net.pubnative.library.vast.VastAd;
+import net.pubnative.library.widget.CountDownView;
 import net.pubnative.library.widget.VideoPopup;
 import net.pubnative.library.widget.ViewPopup;
 
@@ -62,6 +63,7 @@ import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.os.Handler;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -255,7 +257,8 @@ public class PubNativeWorker {
 					ifListener);
 		}
 		for (int id : new int[] { vah.playButtonViewId, vah.muteButtonViewId,
-				vah.fullScreenButtonViewId, vah.skipButtonViewId }) {
+				vah.fullScreenButtonViewId, vah.countDownViewId,
+				vah.skipButtonViewId }) {
 			View btn = vah.getView(id);
 			if (btn != null) {
 				setInvisible(true, btn);
@@ -289,6 +292,7 @@ public class PubNativeWorker {
 		final View playButton = wi.holder.getView(wi.holder.playButtonViewId);
 		final View fullScreenButton = wi.holder
 				.getView(wi.holder.fullScreenButtonViewId);
+		final View countDownView = wi.holder.getView(wi.holder.countDownViewId);
 		final View skipButton = wi.holder.getView(wi.holder.skipButtonViewId);
 		final View muteButton = wi.holder.getView(wi.holder.muteButtonViewId);
 		videoView.setOnClickListener(new OnClickListener() {
@@ -350,7 +354,22 @@ public class PubNativeWorker {
 					mp.start();
 					setInvisible(true, bannerView);
 					MiscUtils.setInvisible(false, videoView, fullScreenButton,
-							skipButton, muteButton);
+							countDownView, skipButton, muteButton);
+					if (countDownView != null
+							&& countDownView instanceof CountDownView) {
+						final CountDownView cdw = (CountDownView) countDownView;
+						final Handler handler = new Handler();
+						Runnable updateProgressRunnable = new Runnable() {
+
+							@Override
+							public void run() {
+								cdw.setProgress(wi.mp.getCurrentPosition(),
+										wi.mp.getDuration());
+								handler.postDelayed(this, 100);
+							}
+						};
+						updateProgressRunnable.run();
+					}
 				}
 			}
 		});
@@ -364,7 +383,7 @@ public class PubNativeWorker {
 					vp.dismiss();
 				}
 				MiscUtils.setInvisible(true, videoView, fullScreenButton,
-						skipButton, muteButton);
+						countDownView, skipButton, muteButton);
 				if (popupView != null) {
 					new ViewPopup(popupView).show(parentView);
 					parentView = popupView = null;
