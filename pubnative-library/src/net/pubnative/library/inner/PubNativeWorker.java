@@ -366,6 +366,9 @@ public class PubNativeWorker {
 								cdw.setProgress(wi.mp.getCurrentPosition(),
 										wi.mp.getDuration());
 								handler.postDelayed(this, 100);
+								if (!wi.mp.isPlaying()) {
+									handler.removeMessages(0);
+								}
 							}
 						};
 						updateProgressRunnable.run();
@@ -392,7 +395,11 @@ public class PubNativeWorker {
 				MiscUtils.setInvisible(true, videoView, fullScreenButton,
 						countDownView, skipButton, muteButton);
 				if (popupView != null) {
-					new ViewPopup(popupView).show(parentView);
+					try {
+						new ViewPopup(popupView).show(parentView);
+					} catch (Exception e) {
+						// XXX hack
+					}
 					parentView = popupView = null;
 				}
 			}
