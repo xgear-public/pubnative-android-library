@@ -354,7 +354,7 @@ public class PubNativeWorker {
 					mp.start();
 					setInvisible(true, bannerView);
 					MiscUtils.setInvisible(false, videoView, fullScreenButton,
-							countDownView, skipButton, muteButton);
+							countDownView, muteButton);
 					if (countDownView != null
 							&& countDownView instanceof CountDownView) {
 						final CountDownView cdw = (CountDownView) countDownView;
@@ -369,6 +369,13 @@ public class PubNativeWorker {
 							}
 						};
 						updateProgressRunnable.run();
+						handler.postDelayed(new Runnable() {
+
+							@Override
+							public void run() {
+								MiscUtils.setInvisible(false, skipButton);
+							}
+						}, wi.holder.ad.getVideoSkipTime() * 1000);
 					}
 				}
 			}
