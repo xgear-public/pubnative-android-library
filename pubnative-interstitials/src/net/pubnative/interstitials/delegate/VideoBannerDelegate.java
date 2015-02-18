@@ -74,6 +74,7 @@ public class VideoBannerDelegate extends AbstractSingleHolderListDelegate<View> 
 		holder.backViewHolder.downloadViewId = R.id.btn_download;
 		//
 		view.findViewById(R.id.view_banner).setOnClickListener(this);
+		view.findViewById(R.id.view_video).setOnClickListener(this);
 		interstitialView.setOnClickListener(this);
 		//
 		return view;
@@ -81,7 +82,8 @@ public class VideoBannerDelegate extends AbstractSingleHolderListDelegate<View> 
 
 	@Override
 	public void onClick(View v) {
-		if (v == interstitialView || v.getId() == R.id.view_banner) {
+		if (v == interstitialView || v.getId() == R.id.view_banner
+				|| v.getId() == R.id.view_video) {
 			showInPlayStore(holder.ad);
 		} else {
 			super.onClick(v);

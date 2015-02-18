@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import net.pubnative.library.PubNative;
 import net.pubnative.library.PubNativeListener;
 import net.pubnative.library.model.holder.AdHolder;
 import net.pubnative.library.model.holder.ImageAdHolder;
@@ -57,7 +56,6 @@ import org.droidparts.net.image.ImageFetchListener;
 import org.droidparts.net.image.ImageReshaper;
 import org.droidparts.util.L;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
@@ -295,13 +293,15 @@ public class PubNativeWorker {
 		final View countDownView = wi.holder.getView(wi.holder.countDownViewId);
 		final View skipButton = wi.holder.getView(wi.holder.skipButtonViewId);
 		final View muteButton = wi.holder.getView(wi.holder.muteButtonViewId);
-		videoView.setOnClickListener(new OnClickListener() {
+		if (fullScreenButton != null) {
+			fullScreenButton.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				showVideoPopup(videoView, wi, videoView);
-			}
-		});
+				@Override
+				public void onClick(View v) {
+					showVideoPopup(videoView, wi, videoView);
+				}
+			});
+		}
 		if (playButton != null) {
 			playButton.setOnClickListener(new OnClickListener() {
 
@@ -319,7 +319,11 @@ public class PubNativeWorker {
 
 				@Override
 				public void onClick(View v) {
-					doSkip(wi);
+					wi.mp.stop();
+					// TODO improve
+					parentView = bannerView;
+					popupView = wi.holder.backViewHolder.getView();
+					showInterstitialPopup();
 				}
 			});
 		}
@@ -394,15 +398,9 @@ public class PubNativeWorker {
 				}
 				MiscUtils.setInvisible(true, videoView, fullScreenButton,
 						countDownView, skipButton, muteButton);
-				if (popupView != null) {
-					try {
-						new ViewPopup(popupView).show(parentView);
-					} catch (Exception e) {
-						// XXX hack
-					}
-					parentView = popupView = null;
-				}
+				showInterstitialPopup();
 			}
+
 		});
 	}
 
@@ -520,10 +518,15 @@ public class PubNativeWorker {
 		}
 	}
 
-	private static void doSkip(WorkerItem<?> wi) {
-		wi.mp.stop();
-		PubNative.showInPlayStoreViaDialog((Activity) wi.getContext(),
-				wi.holder.ad);
+	private static void showInterstitialPopup() {
+		if (popupView != null) {
+			try {
+				new ViewPopup(popupView).show(parentView);
+			} catch (Exception e) {
+				// XXX hack
+			}
+			parentView = popupView = null;
+		}
 	}
 
 	private static final Runnable checkRunnable = new Runnable() {
@@ -592,8 +595,9 @@ public class PubNativeWorker {
 
 		@Override
 		public void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi) {
-			didVideoPopupClose(vp, wi);
-			doSkip(wi);
+			vp.dismiss();
+			wi.mp.stop();
+			showInterstitialPopup();
 		}
 
 		@Override
