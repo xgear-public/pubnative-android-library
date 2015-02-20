@@ -23,48 +23,46 @@ package net.pubnative.library.vast;
 
 import java.util.ArrayList;
 
-import net.pubnative.library.vast.Creative.TrackingEvent;
-
 import org.droidparts.annotation.serialize.XML;
 import org.droidparts.model.Model;
 
-public class VastAd extends Model {
+public class Creative extends Model {
 	private static final long serialVersionUID = 1L;
 
+	@XML(tag = "Linear" + XML.SUB + "Duration")
+	public String duration;
 	//
-
-	public String getVideoUrl() {
-		return creatives.get(0).mediaFiles.get(0).url;
-	}
-
-	public String getImpressionUrl() {
-		return impressionUrl;
-	}
-
-	public String getEventUrl(VastEvent ev) {
-		Creative cr = creatives.get(0);
-		for (TrackingEvent te : cr.trackingEvents) {
-			if (ev.key.equals(te.event)) {
-				return te.url;
-			}
-		}
-		return null;
-	}
+	@XML(tag = "Linear" + XML.SUB + "TrackingEvents", attribute = "Tracking")
+	public ArrayList<Creative.TrackingEvent> trackingEvents;
+	@XML(tag = "Linear" + XML.SUB + "MediaFiles", attribute = "MediaFile")
+	public ArrayList<Creative.MediaFile> mediaFiles;
 
 	//
 
-	private static final String BASE = "Ad" + XML.SUB + "InLine" + XML.SUB;
+	public static class TrackingEvent extends Model {
+		private static final long serialVersionUID = 1L;
 
-	@XML(tag = "Ad", attribute = "id")
-	public long id;
-	@XML(tag = BASE + "AdTitle")
-	public String title;
-	@XML(tag = BASE + "Description")
-	public String description;
-	@XML(tag = BASE + "Impression")
-	public String impressionUrl;
+		@XML(attribute = "event")
+		public String event;
+		@XML
+		public String url;
+	}
 
-	@XML(tag = BASE + "Creatives", attribute = "Creative")
-	public ArrayList<Creative> creatives;
+	public static class MediaFile extends Model {
+		private static final long serialVersionUID = 1L;
 
+		@XML(attribute = "delivery")
+		public String delivery;
+		@XML(attribute = "height")
+		public int height;
+		@XML(attribute = "scalable")
+		public boolean scalable;
+		@XML(attribute = "type")
+		public String type;
+		@XML(attribute = "width")
+		public int width;
+
+		@XML
+		public String url;
+	}
 }
