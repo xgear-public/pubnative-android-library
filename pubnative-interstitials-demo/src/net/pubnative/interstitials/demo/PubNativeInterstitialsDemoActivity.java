@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials;
+package net.pubnative.interstitials.demo;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
@@ -29,8 +29,8 @@ import static android.view.Window.FEATURE_NO_TITLE;
 import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
 import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 import static net.pubnative.interstitials.contract.PubNativeInterstitialsConstants.PUB_NATIVE_INTERSTITIALS;
-import net.pubnative.interstitials.api.PubNativeInterstitialsType;
-import net.pubnative.interstitials.delegate.AbstractDelegate;
+import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
+import net.pubnative.interstitials.demo.delegate.AbstractDemoDelegate;
 import net.pubnative.interstitials.persist.InMem;
 import net.pubnative.library.PubNativeListener;
 import net.pubnative.library.inner.PubNativeWorker;
@@ -43,16 +43,16 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
-public final class PubNativeInterstitialsActivity extends Activity implements
+public final class PubNativeInterstitialsDemoActivity extends Activity implements
 		PubNativeListener {
 
 	public static Intent getShowPromosIntent(Context ctx, boolean fullScreen,
-			PubNativeInterstitialsType type, int adCount) {
+			PubNativeDemoInterstitialsType type, int adCount) {
 		return IntentData.getShowPromosIntent(ctx, fullScreen, type, adCount);
 	}
 
 	public static Intent getShowPromosIntent(Context ctx, boolean fullScreen,
-			PubNativeInterstitialsType type, NativeAd ad) {
+			PubNativeDemoInterstitialsType type, NativeAd ad) {
 		return IntentData.getShowPromosIntent(ctx, fullScreen, type, ad);
 	}
 
@@ -60,7 +60,7 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 		return IntentData.getFinishIntent(ctx, fullScreen);
 	}
 
-	/* package */AbstractDelegate delegate;
+	/* package */AbstractDemoDelegate delegate;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +97,7 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 		if (id.isContentIntent()) {
 			if (onCreate) {
 				if (delegate == null || delegate.getType() != id.getType()) {
-					delegate = AbstractDelegate.get(this, id.getType(),
+					delegate = AbstractDemoDelegate.get(this, id.getType(),
 							id.getAdCount());
 				}
 				delegate.onCreate();
@@ -169,14 +169,14 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 	static class IntentData {
 
 		static Intent getShowPromosIntent(Context ctx, boolean fullScreen,
-				PubNativeInterstitialsType type, NativeAd ad) {
+				PubNativeDemoInterstitialsType type, NativeAd ad) {
 			Intent intent = getShowPromosIntent(ctx, fullScreen, type, 1);
 			intent.putExtra(EXTRA_AD, ad);
 			return intent;
 		}
 
 		static Intent getShowPromosIntent(Context ctx, boolean fullScreen,
-				PubNativeInterstitialsType type, int adCount) {
+				PubNativeDemoInterstitialsType type, int adCount) {
 			Intent intent = getIntent(ctx, CONTENT_INTENT, fullScreen);
 			intent.putExtra(EXTRA_TYPE, type);
 			intent.putExtra(EXTRA_AD_COUNT, adCount);
@@ -191,7 +191,7 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 		private static Intent getIntent(Context ctx, String type,
 				boolean fullScreen) {
 			Intent intent = new Intent(ctx,
-					PubNativeInterstitialsActivity.class);
+					PubNativeInterstitialsDemoActivity.class);
 			intent.setFlags(LAUNCH_FLAGS);
 			intent.putExtra(INTENT_TYPE, type);
 			intent.putExtra(EXTRA_FULL_SCREEN, fullScreen);
@@ -240,8 +240,8 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 			return (NativeAd) intent.getSerializableExtra(EXTRA_AD);
 		}
 
-		PubNativeInterstitialsType getType() {
-			return (PubNativeInterstitialsType) intent
+		PubNativeDemoInterstitialsType getType() {
+			return (PubNativeDemoInterstitialsType) intent
 					.getSerializableExtra(EXTRA_TYPE);
 		}
 
@@ -258,7 +258,6 @@ public final class PubNativeInterstitialsActivity extends Activity implements
 
 	@Override
 	public void onError(Exception ex) {
-		AbstractDelegate.notifyOnError(ex);
 		finish();
 	}
 

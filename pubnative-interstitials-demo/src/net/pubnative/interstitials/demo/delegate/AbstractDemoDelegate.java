@@ -19,16 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.delegate;
+package net.pubnative.interstitials.demo.delegate;
 
 import static org.droidparts.util.ui.ViewUtils.setInvisible;
-
-import java.util.WeakHashMap;
-
-import net.pubnative.interstitials.PubNativeInterstitialsActivity;
-import net.pubnative.interstitials.R;
-import net.pubnative.interstitials.api.PubNativeInterstitialsListener;
-import net.pubnative.interstitials.api.PubNativeInterstitialsType;
+import net.pubnative.interstitials.demo.PubNativeInterstitialsDemoActivity;
+import net.pubnative.interstitials.demo.R;
+import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
 import net.pubnative.interstitials.persist.InMem;
 import net.pubnative.interstitials.util.ScreenUtil;
 import net.pubnative.library.PubNative;
@@ -47,21 +43,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-public abstract class AbstractDelegate implements OnClickListener {
+public abstract class AbstractDemoDelegate implements OnClickListener {
 
 	public static boolean backgroundRedirectEnabled = true;
 
-	public static AbstractDelegate get(PubNativeInterstitialsActivity act,
-			PubNativeInterstitialsType type, int adCount) {
+	public static AbstractDemoDelegate get(
+			PubNativeInterstitialsDemoActivity act,
+			PubNativeDemoInterstitialsType type, int adCount) {
 		switch (type) {
-		case INTERSTITIAL:
-			return new InterstitialDelegate(act);
+		case NATIVE:
+			return new NativeDelegate(act, adCount);
+		case LIST:
+			return new ListDelegate(act, adCount);
+		case CAROUSEL:
+			return new CarouselDelegate(act, adCount);
+		case VIDEO_BANNER:
+			return new VideoBannerDelegate(act);
+		case VIDEO_IN_FEED:
+			return new VideoInFeedDelegate(act);
 		default:
 			throw new IllegalArgumentException(type.toString());
 		}
 	}
 
-	protected final PubNativeInterstitialsActivity act;
+	protected final PubNativeInterstitialsDemoActivity act;
 	protected final int adCount;
 
 	protected View contentView;
@@ -69,7 +74,8 @@ public abstract class AbstractDelegate implements OnClickListener {
 
 	protected View closeBtn;
 
-	public AbstractDelegate(PubNativeInterstitialsActivity act, int adCount) {
+	public AbstractDemoDelegate(PubNativeInterstitialsDemoActivity act,
+			int adCount) {
 		this.act = act;
 		this.adCount = adCount;
 	}
@@ -102,7 +108,6 @@ public abstract class AbstractDelegate implements OnClickListener {
 
 	public void onLoadingDone() {
 		setInvisible(false, contentView);
-		notifyOnShown(getType());
 	}
 
 	@Override
@@ -127,12 +132,11 @@ public abstract class AbstractDelegate implements OnClickListener {
 	}
 
 	public void onActivityFinish() {
-		notifyOnClosed(getType());
 	}
 
 	//
 
-	public abstract PubNativeInterstitialsType getType();
+	public abstract PubNativeDemoInterstitialsType getType();
 
 	protected abstract int getContentLayoutId();
 
@@ -148,32 +152,23 @@ public abstract class AbstractDelegate implements OnClickListener {
 		} else {
 			PubNative.showInPlayStoreViaBrowser(act, ad);
 		}
-		notifyOnTapped(getType(), ad);
 	}
 
 	//
 
 	public static void init(Context ctx, String appKey) {
-		AbstractDelegate.ctx = ctx.getApplicationContext();
+		AbstractDemoDelegate.ctx = ctx.getApplicationContext();
 		InMem.appKey = appKey;
-	}
-
-	public static void addListener(PubNativeInterstitialsListener listener) {
-		listeners.put(listener, null);
-	}
-
-	public static void removeListener(PubNativeInterstitialsListener listener) {
-		listeners.remove(listener);
 	}
 
 	//
 
-	public static void show(Activity act, PubNativeInterstitialsType type,
+	public static void show(Activity act, PubNativeDemoInterstitialsType type,
 			int adCount) {
 		callingActivityIsFullScreen = ScreenUtil.isFullScreen(act);
 		showCalled = true;
-		Intent intent = PubNativeInterstitialsActivity.getShowPromosIntent(ctx,
-				callingActivityIsFullScreen, type, adCount);
+		Intent intent = PubNativeInterstitialsDemoActivity.getShowPromosIntent(
+				ctx, callingActivityIsFullScreen, type, adCount);
 		ctx.startActivity(intent);
 	}
 
@@ -187,42 +182,12 @@ public abstract class AbstractDelegate implements OnClickListener {
 
 	private static Context ctx;
 
-	private static final WeakHashMap<PubNativeInterstitialsListener, Void> listeners = new WeakHashMap<PubNativeInterstitialsListener, Void>();
-
 	static void onException(Exception e) {
-		notifyOnError(e);
 		if (showCalled) {
 			showCalled = false;
-			Intent intent = PubNativeInterstitialsActivity.getFinishIntent(ctx,
-					callingActivityIsFullScreen);
+			Intent intent = PubNativeInterstitialsDemoActivity.getFinishIntent(
+					ctx, callingActivityIsFullScreen);
 			ctx.startActivity(intent);
-		}
-	}
-
-	//
-
-	private static void notifyOnClosed(PubNativeInterstitialsType type) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onClosed(type);
-		}
-	}
-
-	private static void notifyOnTapped(PubNativeInterstitialsType type,
-			NativeAd ad) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onTapped(ad);
-		}
-	}
-
-	private static void notifyOnShown(PubNativeInterstitialsType type) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onShown(type);
-		}
-	}
-
-	public static void notifyOnError(Exception e) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onError(e);
 		}
 	}
 

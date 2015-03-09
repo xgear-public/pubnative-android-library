@@ -19,10 +19,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.api;
+package net.pubnative.interstitials.demo.delegate.adapter;
 
-public enum PubNativeInterstitialsType {
+import net.pubnative.interstitials.demo.R;
+import android.content.Context;
 
-	INTERSTITIAL
+public class GameListAdapter extends NativeAdHolderAdapter {
+
+	public GameListAdapter(Context ctx) {
+		super(ctx);
+	}
+
+	@Override
+	protected int getLayoutId() {
+		return R.layout.pn_view_row_list_delegate;
+	}
 
 }

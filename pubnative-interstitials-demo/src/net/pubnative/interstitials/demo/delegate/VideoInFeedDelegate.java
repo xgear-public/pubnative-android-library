@@ -19,10 +19,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.api;
+package net.pubnative.interstitials.demo.delegate;
 
-public enum PubNativeInterstitialsType {
+import net.pubnative.interstitials.demo.PubNativeInterstitialsDemoActivity;
+import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
 
-	INTERSTITIAL
+import org.droidparts.util.ui.ViewUtils;
+
+import android.view.View;
+
+public class VideoInFeedDelegate extends VideoBannerDelegate {
+
+	public VideoInFeedDelegate(PubNativeInterstitialsDemoActivity act) {
+		super(act);
+	}
+
+	@Override
+	public PubNativeDemoInterstitialsType getType() {
+		return PubNativeDemoInterstitialsType.VIDEO_IN_FEED;
+	}
+
+	@Override
+	protected View makeView() {
+		View v = super.makeView();
+		ViewUtils.setGone(true, v.findViewById(holder.playButtonViewId));
+		holder.playButtonViewId = -1;
+		return v;
+	}
 
 }

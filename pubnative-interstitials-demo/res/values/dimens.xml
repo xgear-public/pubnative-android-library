@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Banner -->
+    <dimen name="icon_size">60dp</dimen>
+    <dimen name="icon_corner_radius">6dp</dimen>
+
+</resources>

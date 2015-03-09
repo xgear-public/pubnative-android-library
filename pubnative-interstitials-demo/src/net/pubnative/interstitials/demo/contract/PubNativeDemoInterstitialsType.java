@@ -19,10 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.api;
+package net.pubnative.interstitials.demo.contract;
 
-public enum PubNativeInterstitialsType {
+public enum PubNativeDemoInterstitialsType {
 
-	INTERSTITIAL
+	NATIVE, LIST, CAROUSEL, VIDEO_BANNER, VIDEO_IN_FEED
 
 }

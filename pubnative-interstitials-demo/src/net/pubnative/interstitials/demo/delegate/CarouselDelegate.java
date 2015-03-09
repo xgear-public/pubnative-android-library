@@ -19,10 +19,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.api;
+package net.pubnative.interstitials.demo.delegate;
 
-public enum PubNativeInterstitialsType {
+import net.pubnative.interstitials.demo.PubNativeInterstitialsDemoActivity;
+import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
+import net.pubnative.interstitials.widget.AdCarouselView;
+import net.pubnative.library.model.holder.NativeAdHolder;
 
-	INTERSTITIAL
+public class CarouselDelegate extends
+		AbstractSingleHolderListDelegate<AdCarouselView> implements
+		AdCarouselView.Listener {
+
+	private NativeAdHolder[] holders;
+
+	public CarouselDelegate(PubNativeInterstitialsDemoActivity act, int adCount) {
+		super(act, adCount);
+	}
+
+	@Override
+	public PubNativeDemoInterstitialsType getType() {
+		return PubNativeDemoInterstitialsType.CAROUSEL;
+	}
+
+	@Override
+	protected AdCarouselView makeView() {
+		AdCarouselView carouselView = new AdCarouselView(act);
+		carouselView.setListener(this);
+		holders = carouselView.createAndAddHolders(adCount);
+		return carouselView;
+	}
+
+	@Override
+	public NativeAdHolder[] getAdHolders() {
+		return holders;
+	}
+
+	@Override
+	public void didClick(NativeAdHolder holder) {
+		showInPlayStore(holder.ad);
+	}
 
 }
