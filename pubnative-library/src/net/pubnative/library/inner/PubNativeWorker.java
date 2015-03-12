@@ -596,8 +596,8 @@ public class PubNativeWorker {
 		@Override
 		public void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi) {
 			vp.dismiss();
-			wi.mp.stop();
-			showInterstitialPopup();
+			((VideoAdHolder) wi.holder).getView(
+					((VideoAdHolder) wi.holder).videoViewId).performClick();
 		}
 
 		@Override
