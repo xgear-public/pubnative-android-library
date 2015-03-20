@@ -25,6 +25,9 @@
             android:name=".activity.BannerActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".activity.IconActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".activity.CarouselActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity

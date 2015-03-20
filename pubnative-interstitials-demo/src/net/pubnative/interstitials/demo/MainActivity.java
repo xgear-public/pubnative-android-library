@@ -6,6 +6,7 @@ import net.pubnative.interstitials.api.PubNativeInterstitialsType;
 import net.pubnative.interstitials.demo.activity.AbstractDemoActivity;
 import net.pubnative.interstitials.demo.activity.BannerActivity;
 import net.pubnative.interstitials.demo.activity.CarouselActivity;
+import net.pubnative.interstitials.demo.activity.IconActivity;
 import net.pubnative.interstitials.demo.activity.InFeedVideoActivity;
 import net.pubnative.interstitials.demo.activity.ListItemBriefActivity;
 import net.pubnative.interstitials.demo.activity.ListItemFullActivity;
@@ -39,7 +40,7 @@ public class MainActivity extends Activity implements OnClickListener,
 		PubNativeInterstitials.init(this, Contract.APP_TOKEN);
 		PubNativeInterstitials.addListener(this);
 		for (int id : new int[] { R.id.btn_settings, R.id.btn_interstitial,
-				R.id.btn_video_interstitial, R.id.btn_banner,
+				R.id.btn_video_interstitial, R.id.btn_banner, R.id.btn_icon,
 				R.id.btn_list_item_brief, R.id.btn_list_item_full,
 				R.id.btn_carousel, R.id.btn_video_banner,
 				R.id.btn_in_feed_video }) {
@@ -67,6 +68,9 @@ public class MainActivity extends Activity implements OnClickListener,
 			break;
 		case R.id.btn_banner:
 			cls = BannerActivity.class;
+			break;
+		case R.id.btn_icon:
+			cls = IconActivity.class;
 			break;
 		case R.id.btn_list_item_brief:
 			cls = ListItemBriefActivity.class;

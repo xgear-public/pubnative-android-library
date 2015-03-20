@@ -54,6 +54,14 @@
                 android:text="@string/banner" />
 
             <Button
+                android:id="@+id/btn_icon"
+                style="@style/PubNative.Button"
+                android:layout_width="@dimen/button_width"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/button_margin"
+                android:text="@string/icon" />
+
+            <Button
                 android:id="@+id/btn_list_item_brief"
                 style="@style/PubNative.Button"
                 android:layout_width="@dimen/button_width"

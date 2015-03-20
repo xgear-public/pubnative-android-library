@@ -8,8 +8,9 @@
     <string name="interstitial">Interstitial</string>
     <string name="video_interstitial">Video Interstitial</string>
     <string name="banner">Banner</string>
-    <string name="list_item_brief">List Item Brief</string>
-    <string name="list_item_full">List Item Full</string>
+    <string name="icon">Icon</string>
+    <string name="list_item_brief">Game List</string>
+    <string name="list_item_full">Native</string>
     <string name="carousel">Carousel</string>
     <string name="video_banner">Video Banner</string>
     <string name="in_feed_video">In-Feed Video</string>
