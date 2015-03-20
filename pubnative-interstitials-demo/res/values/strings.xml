@@ -6,6 +6,7 @@
     <string name="settings">Settings</string>
     
     <string name="interstitial">Interstitial</string>
+    <string name="video_interstitial">Video Interstitial</string>
     <string name="banner">Banner</string>
     <string name="list_item_brief">List Item Brief</string>
     <string name="list_item_full">List Item Full</string>

@@ -29,7 +29,7 @@ import android.view.View;
 
 public class InterstitialDelegate extends AbstractDelegate {
 
-	private NativeAdHolder[] holders;
+	private NativeAdHolder holder;
 
 	public InterstitialDelegate(PubNativeInterstitialsActivity act) {
 		super(act, 1);
@@ -47,7 +47,7 @@ public class InterstitialDelegate extends AbstractDelegate {
 
 	@Override
 	public NativeAdHolder[] getAdHolders() {
-		return holders;
+		return new NativeAdHolder[] { holder };
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class InterstitialDelegate extends AbstractDelegate {
 	}
 
 	private void createHolders() {
-		NativeAdHolder holder = new NativeAdHolder(holderView);
+		holder = new NativeAdHolder(holderView);
 		holder.iconViewId = R.id.view_icon;
 		holder.bannerViewId = R.id.view_game_image;
 		holder.portraitBannerViewId = R.id.view_game_image_portrait;
@@ -66,13 +66,12 @@ public class InterstitialDelegate extends AbstractDelegate {
 		holder.ratingViewId = R.id.view_rating;
 		holder.descriptionViewId = R.id.view_description;
 		holder.downloadViewId = R.id.btn_download;
-		holders = new NativeAdHolder[] { holder };
 	}
 
 	@Override
 	public void onClick(View v) {
 		if (v == holderView) {
-			showInPlayStore(holders[0].ad);
+			showInPlayStore(holder.ad);
 		} else {
 			super.onClick(v);
 		}

@@ -56,6 +56,8 @@ public abstract class AbstractDelegate implements OnClickListener {
 		switch (type) {
 		case INTERSTITIAL:
 			return new InterstitialDelegate(act);
+		case VIDEO_INTERSTITIAL:
+			return new VideoInterstitialDelegate(act);
 		default:
 			throw new IllegalArgumentException(type.toString());
 		}

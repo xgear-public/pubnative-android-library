@@ -39,9 +39,10 @@ public class MainActivity extends Activity implements OnClickListener,
 		PubNativeInterstitials.init(this, Contract.APP_TOKEN);
 		PubNativeInterstitials.addListener(this);
 		for (int id : new int[] { R.id.btn_settings, R.id.btn_interstitial,
-				R.id.btn_banner, R.id.btn_list_item_brief,
-				R.id.btn_list_item_full, R.id.btn_carousel,
-				R.id.btn_video_banner, R.id.btn_in_feed_video }) {
+				R.id.btn_video_interstitial, R.id.btn_banner,
+				R.id.btn_list_item_brief, R.id.btn_list_item_full,
+				R.id.btn_carousel, R.id.btn_video_banner,
+				R.id.btn_in_feed_video }) {
 			findViewById(id).setOnClickListener(this);
 		}
 		InMem.appKey = Contract.APP_TOKEN;
@@ -59,6 +60,10 @@ public class MainActivity extends Activity implements OnClickListener,
 		case R.id.btn_interstitial:
 			PubNativeInterstitials.show(this,
 					PubNativeInterstitialsType.INTERSTITIAL, adCount);
+			break;
+		case R.id.btn_video_interstitial:
+			PubNativeInterstitials.show(this,
+					PubNativeInterstitialsType.VIDEO_INTERSTITIAL, adCount);
 			break;
 		case R.id.btn_banner:
 			cls = BannerActivity.class;

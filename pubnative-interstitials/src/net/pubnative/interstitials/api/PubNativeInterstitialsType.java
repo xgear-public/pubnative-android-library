@@ -23,6 +23,6 @@ package net.pubnative.interstitials.api;
 
 public enum PubNativeInterstitialsType {
 
-	INTERSTITIAL
+	INTERSTITIAL, VIDEO_INTERSTITIAL
 
 }
