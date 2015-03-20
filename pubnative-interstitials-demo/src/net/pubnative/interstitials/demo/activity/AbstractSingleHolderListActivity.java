@@ -19,43 +19,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.demo.delegate;
+package net.pubnative.interstitials.demo.activity;
 
-import net.pubnative.interstitials.demo.PubNativeInterstitialsDemoActivity;
 import net.pubnative.interstitials.demo.R;
 
 import org.droidparts.adapter.widget.ArrayAdapter;
 import org.droidparts.util.ui.ViewUtils;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public abstract class AbstractSingleHolderListDelegate<T extends View> extends
-		AbstractDemoDelegate {
+public abstract class AbstractSingleHolderListActivity<T extends View> extends
+		AbstractDemoActivity {
 
 	private ListView listView;
 	protected T view;
 
-	public AbstractSingleHolderListDelegate(
-			PubNativeInterstitialsDemoActivity act, int adCount) {
-		super(act, adCount);
+	@Override
+	public void onPreInject() {
+		setContentView(R.layout.activity_list);
 	}
 
 	@Override
-	public void onCreate() {
-		super.onCreate();
-		listView = ViewUtils.findViewById(act, R.id.view_list);
-		listView.setAdapter(new ListAdapter(act));
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		listView = ViewUtils.findViewById(this, R.id.view_list);
+		listView.setAdapter(new ListAdapter(this));
 		view = makeView();
-	}
-
-	@Override
-	protected final int getContentLayoutId() {
-		return R.layout.pn_delegate_list;
+		show();
 	}
 
 	protected int getRowCount() {
@@ -88,7 +84,7 @@ public abstract class AbstractSingleHolderListDelegate<T extends View> extends
 				tv.setText("Row " + position);
 				return view;
 			} else {
-				return AbstractSingleHolderListDelegate.this.view;
+				return AbstractSingleHolderListActivity.this.view;
 			}
 		}
 	}

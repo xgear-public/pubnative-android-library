@@ -30,7 +30,6 @@ import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.request.AdRequest;
 import net.pubnative.library.model.response.NativeAd;
 
-import org.droidparts.activity.legacy.Activity;
 import org.droidparts.annotation.inject.InjectView;
 
 import android.graphics.PorterDuff;
@@ -40,7 +39,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.RatingBar;
 
-public class BannerActivity extends Activity implements OnClickListener {
+public class BannerActivity extends AbstractDemoActivity implements
+		OnClickListener {
 
 	@InjectView(id = R.id.banner1, click = true)
 	private View banner1View;
@@ -110,24 +110,6 @@ public class BannerActivity extends Activity implements OnClickListener {
 	}
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-		PubNative.onPause();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		PubNative.onResume();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		PubNative.onDestroy();
-	}
-
-	@Override
 	public void onClick(View view) {
 		NativeAd ad = null;
 		if (view == banner1View) {
@@ -136,6 +118,11 @@ public class BannerActivity extends Activity implements OnClickListener {
 			ad = banner2Holder.ad;
 		}
 		PubNative.showInPlayStoreViaDialog(this, ad);
+	}
+
+	@Override
+	protected NativeAdHolder[] getAdHolders() {
+		return null;
 	}
 
 }

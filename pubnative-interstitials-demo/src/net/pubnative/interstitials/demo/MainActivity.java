@@ -3,18 +3,21 @@ package net.pubnative.interstitials.demo;
 import net.pubnative.interstitials.PubNativeInterstitials;
 import net.pubnative.interstitials.api.PubNativeInterstitialsListener;
 import net.pubnative.interstitials.api.PubNativeInterstitialsType;
+import net.pubnative.interstitials.demo.activity.AbstractDemoActivity;
 import net.pubnative.interstitials.demo.activity.BannerActivity;
-import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
-import net.pubnative.interstitials.demo.delegate.AbstractDemoDelegate;
+import net.pubnative.interstitials.demo.activity.CarouselActivity;
+import net.pubnative.interstitials.demo.activity.InFeedVideoActivity;
+import net.pubnative.interstitials.demo.activity.ListItemBriefActivity;
+import net.pubnative.interstitials.demo.activity.ListItemFullActivity;
+import net.pubnative.interstitials.demo.activity.VideoBannerActivity;
 import net.pubnative.interstitials.demo.misc.DialogFactory;
 import net.pubnative.interstitials.demo.misc.DialogFactory.SettingsDialogListener;
-import net.pubnative.library.PubNative;
+import net.pubnative.interstitials.persist.InMem;
 import net.pubnative.library.model.response.NativeAd;
 
 import org.droidparts.activity.legacy.Activity;
 import org.droidparts.util.L;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,17 +44,14 @@ public class MainActivity extends Activity implements OnClickListener,
 				R.id.btn_video_banner, R.id.btn_in_feed_video }) {
 			findViewById(id).setOnClickListener(this);
 		}
-		AbstractDemoDelegate.init(this, Contract.APP_TOKEN);
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		PubNative.setImageReshaper(null);
+		InMem.appKey = Contract.APP_TOKEN;
 	}
 
 	@Override
 	public void onClick(View v) {
+
+		Class<? extends AbstractDemoActivity> cls = null;
+
 		switch (v.getId()) {
 		case R.id.btn_settings:
 			dialogFactory.getSettingsDialog(adCount, l).show();
@@ -61,28 +61,26 @@ public class MainActivity extends Activity implements OnClickListener,
 					PubNativeInterstitialsType.INTERSTITIAL, adCount);
 			break;
 		case R.id.btn_banner:
-			startActivity(new Intent(this, BannerActivity.class));
+			cls = BannerActivity.class;
 			break;
 		case R.id.btn_list_item_brief:
-			AbstractDemoDelegate.show(this,
-					PubNativeDemoInterstitialsType.LIST, adCount);
+			cls = ListItemBriefActivity.class;
 			break;
 		case R.id.btn_list_item_full:
-			AbstractDemoDelegate.show(this,
-					PubNativeDemoInterstitialsType.NATIVE, adCount);
+			cls = ListItemFullActivity.class;
 			break;
 		case R.id.btn_carousel:
-			AbstractDemoDelegate.show(this,
-					PubNativeDemoInterstitialsType.CAROUSEL, adCount);
+			cls = CarouselActivity.class;
 			break;
 		case R.id.btn_video_banner:
-			AbstractDemoDelegate.show(this,
-					PubNativeDemoInterstitialsType.VIDEO_BANNER, adCount);
+			cls = VideoBannerActivity.class;
 			break;
 		case R.id.btn_in_feed_video:
-			AbstractDemoDelegate.show(this,
-					PubNativeDemoInterstitialsType.VIDEO_IN_FEED, adCount);
+			cls = InFeedVideoActivity.class;
 			break;
+		}
+		if (cls != null) {
+			startActivity(AbstractDemoActivity.getIntent(this, cls, adCount));
 		}
 	}
 

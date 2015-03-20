@@ -10,9 +10,4 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent" />
 
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/pn_view_activity_overlay" />
-
 </RelativeLayout>

@@ -19,28 +19,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.interstitials.demo.delegate;
+package net.pubnative.interstitials.demo.adapter;
 
-import net.pubnative.interstitials.demo.PubNativeInterstitialsDemoActivity;
-import net.pubnative.interstitials.demo.contract.PubNativeDemoInterstitialsType;
-import net.pubnative.interstitials.demo.delegate.adapter.GameListAdapter;
-import net.pubnative.interstitials.demo.delegate.adapter.NativeAdHolderAdapter;
+import net.pubnative.interstitials.demo.R;
+import net.pubnative.library.model.holder.NativeAdHolder;
+
+import org.droidparts.adapter.widget.ArrayAdapter;
+
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-public class ListDelegate extends NativeDelegate {
+public class FullAdapter extends ArrayAdapter<NativeAdHolder> {
 
-	public ListDelegate(PubNativeInterstitialsDemoActivity act, int adCount) {
-		super(act, adCount);
+	public FullAdapter(Context ctx) {
+		super(ctx);
+	}
+
+	public NativeAdHolder makeAndAddHolder() {
+		View view = LayoutInflater.from(getContext()).inflate(getLayoutId(),
+				null);
+		NativeAdHolder h = new NativeAdHolder(view);
+		h.iconViewId = R.id.view_icon;
+		h.titleViewId = R.id.view_title;
+		h.subTitleViewId = R.id.view_description;
+		h.ratingViewId = R.id.view_rating;
+		h.descriptionViewId = R.id.view_description;
+		h.categoryViewId = R.id.view_category;
+		h.bannerViewId = R.id.view_banner;
+		h.downloadViewId = R.id.view_download;
+		add(h);
+		return h;
 	}
 
 	@Override
-	public PubNativeDemoInterstitialsType getType() {
-		return PubNativeDemoInterstitialsType.LIST;
+	public View getView(int position, View convertView, ViewGroup parent) {
+		return getItem(position).getView();
 	}
 
-	@Override
-	protected NativeAdHolderAdapter createAdapter(Context ctx) {
-		return new GameListAdapter(ctx);
+	protected int getLayoutId() {
+		return R.layout.view_row_full;
 	}
 
 }
