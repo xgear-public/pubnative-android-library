@@ -42,10 +42,13 @@
         <activity
             android:name=".activity.VideoBannerActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
+        
         <activity
             android:name="net.pubnative.interstitials.PubNativeInterstitialsActivity"
-            android:theme="@style/Theme.PubNativeInterstitials"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:taskAffinity="net.pubnative.interstitials"
+            android:theme="@style/Theme.PubNativeInterstitials" />
     </application>
 
 </manifest>

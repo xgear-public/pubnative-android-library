@@ -90,6 +90,7 @@ Setup
 <activity
             android:name="net.pubnative.interstitials.PubNativeInterstitialsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:hardwareAccelerated="true"
             android:taskAffinity="net.pubnative.interstitials"
             android:theme="@style/Theme.PubNativeInterstitials" />
 ```
