@@ -23,7 +23,7 @@ package net.pubnative.library;
 
 public interface PubNativeContract {
 
-	String BASE_URL = "http://bulk.pubnative.net/api/partner/v2/promotions/";
+	String BASE_URL = "http://api.pubnative.net/api/partner/v2/promotions/";
 	String NATIVE = "native";
 	String IMAGE = "image";
 
