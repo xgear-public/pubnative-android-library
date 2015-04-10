@@ -26,7 +26,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import net.pubnative.library.vast.Creative;
 import net.pubnative.library.vast.Creative.MediaFile;
 import net.pubnative.library.vast.VastAd;
-import net.pubnative.library.vast.VastParser;
 
 import org.w3c.dom.Node;
 

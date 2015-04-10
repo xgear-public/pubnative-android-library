@@ -28,12 +28,9 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 public class InterstitialView extends LinearLayout {
-
-	private ImageView landscapeImageView, portraitImageView;
 
 	public InterstitialView(Context ctx) {
 		super(ctx);
@@ -52,8 +49,6 @@ public class InterstitialView extends LinearLayout {
 
 	private void init() {
 		inflate(getContext(), R.layout.pn_view_interstitial, this);
-		landscapeImageView = (ImageView) findViewById(R.id.view_game_image);
-		portraitImageView = (ImageView) findViewById(R.id.view_game_image_portrait);
 		setBackgroundColor(getResources().getColor(android.R.color.white));
 	}
 
@@ -70,34 +65,10 @@ public class InterstitialView extends LinearLayout {
 	}
 
 	private void applyOrientation() {
-		View container = findViewById(R.id.view_interstitial_1_container);
-		container.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
-				LayoutParams.WRAP_CONTENT));
+
 		View descriptionView = findViewById(R.id.view_description);
-		setGone(false, descriptionView);
-		boolean gotLandscapeImage = (landscapeImageView.getDrawable() != null);
-		boolean gotPortraitImage = (portraitImageView.getDrawable() != null);
-		// XXX OpenRTB hack
-		gotPortraitImage = false;
-		gotLandscapeImage = true;
-		// XXX OpenRTB hack
-		boolean port = ScreenUtil.isPortrait(getContext());
-		boolean swap = false;
-		if (port) {
-			swap = (gotPortraitImage && !gotLandscapeImage);
-		} else {
-			swap = (gotLandscapeImage && !gotPortraitImage);
-			if (swap) {
-				setGone(true, descriptionView);
-				container.setLayoutParams(new LayoutParams(
-						LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-			}
-		}
-		if (swap) {
-			port = !port;
-		}
-		setOrientation(port ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
-		setGone(port, portraitImageView);
-		setGone(!port, landscapeImageView);
+
+		boolean isPortrait = ScreenUtil.isPortrait(getContext());
+		setGone(!isPortrait, descriptionView);
 	}
 }
