@@ -61,7 +61,6 @@ public class InterstitialDelegate extends AbstractDelegate {
 		holder = new NativeAdHolder(holderView);
 		holder.iconViewId = R.id.view_icon;
 		holder.bannerViewId = R.id.view_game_image;
-		holder.portraitBannerViewId = R.id.view_game_image_portrait;
 		holder.titleViewId = R.id.view_title;
 		holder.ratingViewId = R.id.view_rating;
 		holder.descriptionViewId = R.id.view_description;

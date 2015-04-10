@@ -75,7 +75,6 @@ public class VideoInterstitialDelegate extends AbstractDelegate {
 		holder.backViewHolder = new NativeAdHolder(interstitialView);
 		holder.backViewHolder.iconViewId = R.id.view_icon;
 		holder.backViewHolder.bannerViewId = R.id.view_game_image;
-		holder.backViewHolder.portraitBannerViewId = R.id.view_game_image_portrait;
 		holder.backViewHolder.titleViewId = R.id.view_title;
 		holder.backViewHolder.ratingViewId = R.id.view_rating;
 		holder.backViewHolder.descriptionViewId = R.id.view_description;
