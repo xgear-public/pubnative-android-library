@@ -57,6 +57,7 @@ import org.droidparts.net.image.ImageReshaper;
 import org.droidparts.util.L;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -66,557 +67,574 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 public class PubNativeWorker {
 
-	private static final int CHECK_INTERVAL = 500;
-	private static final int SHOWN_TIME = 1000;
-	private static final int VISIBLE_PERCENT = 50;
+    private static final int CHECK_INTERVAL = 500;
+    private static final int SHOWN_TIME = 1000;
+    private static final int VISIBLE_PERCENT = 50;
 
-	//
+    //
 
-	private static Context ctx;
-	private static ImageFetcher imageFetcher;
-	private static ImageReshaper reshaper = null;
-	private static PubNativeListener listener;
+    private static Context ctx;
+    private static ImageFetcher imageFetcher;
+    private static ImageReshaper reshaper = null;
+    private static PubNativeListener listener;
 
-	private static ScheduledExecutorService exec;
-	private static final HashSet<WorkerItem<?>> workerItems = new HashSet<>();
+    private static ScheduledExecutorService exec;
+    private static final HashSet<WorkerItem<?>> workerItems = new HashSet<>();
 
-	private static int imageCounter;
-	private static boolean loaded;
+    private static int imageCounter;
+    private static boolean loaded;
 
-	public static void showAd(String appToken, AdHolder<?>... holders) {
-		AdRequest req = null;
-		if (holders.length > 0) {
-			ctx = holders[0].getView().getContext().getApplicationContext();
-			req = new AdRequest(appToken, holders[0].getFormat());
-			req.fillInDefaults(ctx);
-			req.setAdCount(holders.length);
-		}
-		showAd(req, holders);
+    public static String broadcastInterstitialDismissKey = "popup_vindow_dismiss";
+
+    public static void showAd(String appToken, AdHolder<?>... holders) {
+	AdRequest req = null;
+	if (holders.length > 0) {
+	    ctx = holders[0].getView().getContext().getApplicationContext();
+	    req = new AdRequest(appToken, holders[0].getFormat());
+	    req.fillInDefaults(ctx);
+	    req.setAdCount(holders.length);
 	}
+	showAd(req, holders);
+    }
 
-	public static void showAd(AdRequest req, AdHolder<?>... holders) {
-		imageCounter = 0;
-		loaded = false;
-		if (holders.length > 0) {
-			ctx = holders[0].getView().getContext().getApplicationContext();
-			imageFetcher = new ImageFetcher(ctx);
-			new GetAdsTask<>(ctx, req, makeAdsResultListener(listener, holders))
-					.execute();
+    public static void showAd(AdRequest req, AdHolder<?>... holders) {
+	imageCounter = 0;
+	loaded = false;
+	if (holders.length > 0) {
+	    ctx = holders[0].getView().getContext().getApplicationContext();
+	    imageFetcher = new ImageFetcher(ctx);
+	    new GetAdsTask<>(ctx, req, makeAdsResultListener(listener, holders))
+		    .execute();
+	} else {
+	    onError(new IllegalArgumentException("0 holders."));
+	}
+    }
+
+    public static void setListener(PubNativeListener listener) {
+	PubNativeWorker.listener = listener;
+    }
+
+    public static void setImageReshaper(ImageReshaper reshaper) {
+	PubNativeWorker.reshaper = reshaper;
+    }
+
+    public static void onPause() {
+	if (loaded) {
+	    setExecRunning(false);
+	    for (WorkerItem<?> wi : workerItems) {
+		if (wi.isPlaying()) {
+		    wi.mp.pause();
+		}
+	    }
+	}
+    }
+
+    public static void onResume() {
+	if (loaded) {
+	    setExecRunning(true);
+	}
+    }
+
+    public static void onDestroy() {
+	workerItems.clear();
+    }
+
+    //
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Ad> AsyncTaskResultListener<ArrayList<Ad>> makeAdsResultListener(
+	    final PubNativeListener listener, final AdHolder<?>... holders) {
+	AsyncTaskResultListener<ArrayList<Ad>> resultListener = new AsyncTaskResultListener<ArrayList<Ad>>() {
+
+	    @Override
+	    public void onAsyncTaskSuccess(ArrayList<Ad> result) {
+		if (result.isEmpty()) {
+		    onLoaded();
 		} else {
-			onError(new IllegalArgumentException("0 holders."));
+		    for (int i = 0; i < result.size(); i++) {
+			AdHolder<T> holder = (AdHolder<T>) holders[i];
+			holder.ad = (T) result.get(i);
+			processAd(holder);
+		    }
+		    for (int i = result.size(); i < holders.length; i++) {
+			setInvisible(true, holders[i].getView());
+		    }
 		}
-	}
+	    }
 
-	public static void setListener(PubNativeListener listener) {
-		PubNativeWorker.listener = listener;
-	}
+	    @Override
+	    public void onAsyncTaskFailure(Exception ex) {
+		onError(ex);
+	    }
 
-	public static void setImageReshaper(ImageReshaper reshaper) {
-		PubNativeWorker.reshaper = reshaper;
-	}
+	};
+	return resultListener;
+    }
 
-	public static void onPause() {
-		if (loaded) {
-			setExecRunning(false);
-			for (WorkerItem<?> wi : workerItems) {
-				if (wi.isPlaying()) {
-					wi.mp.pause();
-				}
-			}
-		}
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static void processAd(AdHolder<?> holder) {
+	WorkerItem<?> wi = new WorkerItem(holder);
+	if (holder instanceof ImageAdHolder) {
+	    processImageAd((ImageAdHolder) holder);
+	} else if (holder instanceof NativeAdHolder) {
+	    processNativeAd((NativeAdHolder) holder);
+	} else if (holder instanceof VideoAdHolder) {
+	    processVideoAd((WorkerItem<VideoAdHolder>) wi);
+	    VideoAdHolder h = (VideoAdHolder) holder;
+	    if (h.backViewHolder != null) {
+		h.backViewHolder.ad = (NativeAd) holder.ad;
+		processNativeAd(h.backViewHolder);
+	    }
+	} else {
+	    throw new IllegalArgumentException();
 	}
+	workerItems.add(wi);
+    }
 
-	public static void onResume() {
-		if (loaded) {
-			setExecRunning(true);
-		}
+    private static void processImageAd(ImageAdHolder holder) {
+	ImageView iv = holder.getView(holder.imageViewId);
+	if (iv != null) {
+	    imageFetcher.attachImage(holder.ad.imageUrl, iv, reshaper, 0,
+		    ifListener);
 	}
+    }
 
-	public static void onDestroy() {
-		workerItems.clear();
+    private static void processNativeAd(NativeAdHolder holder) {
+	TextView titleView = holder.getView(holder.titleViewId);
+	if (titleView != null) {
+	    titleView.setText(holder.ad.title);
 	}
-
+	TextView subTitleView = holder.getView(holder.subTitleViewId);
+	if (subTitleView != null) {
+	    subTitleView.setText(holder.ad.category);
+	}
+	RatingBar ratingView = holder.getView(holder.ratingViewId);
+	if (ratingView != null) {
+	    ratingView.setRating(holder.ad.storeRating);
+	}
+	TextView descriptionView = holder.getView(holder.descriptionViewId);
+	if (descriptionView != null) {
+	    descriptionView.setText(holder.ad.description);
+	    setInvisible(isEmpty(holder.ad.description), descriptionView);
+	}
+	TextView categoryView = holder.getView(holder.categoryViewId);
+	if (categoryView != null) {
+	    categoryView.setText(holder.ad.category);
+	}
+	TextView downloadView = holder.getView(holder.downloadViewId);
+	if (downloadView != null) {
+	    downloadView.setText(holder.ad.ctaText);
+	}
 	//
-
-	@SuppressWarnings("unchecked")
-	private static <T extends Ad> AsyncTaskResultListener<ArrayList<Ad>> makeAdsResultListener(
-			final PubNativeListener listener, final AdHolder<?>... holders) {
-		AsyncTaskResultListener<ArrayList<Ad>> resultListener = new AsyncTaskResultListener<ArrayList<Ad>>() {
-
-			@Override
-			public void onAsyncTaskSuccess(ArrayList<Ad> result) {
-				if (result.isEmpty()) {
-					onLoaded();
-				} else {
-					for (int i = 0; i < result.size(); i++) {
-						AdHolder<T> holder = (AdHolder<T>) holders[i];
-						holder.ad = (T) result.get(i);
-						processAd(holder);
-					}
-					for (int i = result.size(); i < holders.length; i++) {
-						setInvisible(true, holders[i].getView());
-					}
-				}
-			}
-
-			@Override
-			public void onAsyncTaskFailure(Exception ex) {
-				onError(ex);
-			}
-
-		};
-		return resultListener;
+	ImageView iconView = holder.getView(holder.iconViewId);
+	if (iconView != null) {
+	    imageFetcher.attachImage(holder.ad.iconUrl, iconView, reshaper, 0,
+		    ifListener);
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void processAd(AdHolder<?> holder) {
-		WorkerItem<?> wi = new WorkerItem(holder);
-		if (holder instanceof ImageAdHolder) {
-			processImageAd((ImageAdHolder) holder);
-		} else if (holder instanceof NativeAdHolder) {
-			processNativeAd((NativeAdHolder) holder);
-		} else if (holder instanceof VideoAdHolder) {
-			processVideoAd((WorkerItem<VideoAdHolder>) wi);
-			VideoAdHolder h = (VideoAdHolder) holder;
-			if (h.backViewHolder != null) {
-				h.backViewHolder.ad = (NativeAd) holder.ad;
-				processNativeAd(h.backViewHolder);
-			}
-		} else {
-			throw new IllegalArgumentException();
-		}
-		workerItems.add(wi);
+	//
+	ImageView bannerView = holder.getView(holder.bannerViewId);
+	if (bannerView != null) {
+	    imageFetcher.attachImage(holder.ad.bannerUrl, bannerView, reshaper,
+		    0, ifListener);
 	}
-
-	private static void processImageAd(ImageAdHolder holder) {
-		ImageView iv = holder.getView(holder.imageViewId);
-		if (iv != null) {
-			imageFetcher.attachImage(holder.ad.imageUrl, iv, reshaper, 0,
-					ifListener);
-		}
+	ImageView portraitBannerView = holder
+		.getView(holder.portraitBannerViewId);
+	if (portraitBannerView != null) {
+	    imageFetcher.attachImage(holder.ad.portraitBannerUrl,
+		    portraitBannerView, reshaper, 0, ifListener);
 	}
+    }
 
-	private static void processNativeAd(NativeAdHolder holder) {
-		TextView titleView = holder.getView(holder.titleViewId);
-		if (titleView != null) {
-			titleView.setText(holder.ad.title);
-		}
-		TextView subTitleView = holder.getView(holder.subTitleViewId);
-		if (subTitleView != null) {
-			subTitleView.setText(holder.ad.category);
-		}
-		RatingBar ratingView = holder.getView(holder.ratingViewId);
-		if (ratingView != null) {
-			ratingView.setRating(holder.ad.storeRating);
-		}
-		TextView descriptionView = holder.getView(holder.descriptionViewId);
-		if (descriptionView != null) {
-			descriptionView.setText(holder.ad.description);
-			setInvisible(isEmpty(holder.ad.description), descriptionView);
-		}
-		TextView categoryView = holder.getView(holder.categoryViewId);
-		if (categoryView != null) {
-			categoryView.setText(holder.ad.category);
-		}
-		TextView downloadView = holder.getView(holder.downloadViewId);
-		if (downloadView != null) {
-			downloadView.setText(holder.ad.ctaText);
-		}
-		//
-		ImageView iconView = holder.getView(holder.iconViewId);
-		if (iconView != null) {
-			imageFetcher.attachImage(holder.ad.iconUrl, iconView, reshaper, 0,
-					ifListener);
-		}
-		//
-		ImageView bannerView = holder.getView(holder.bannerViewId);
-		if (bannerView != null) {
-			imageFetcher.attachImage(holder.ad.bannerUrl, bannerView, reshaper,
-					0, ifListener);
-		}
-		ImageView portraitBannerView = holder
-				.getView(holder.portraitBannerViewId);
-		if (portraitBannerView != null) {
-			imageFetcher.attachImage(holder.ad.portraitBannerUrl,
-					portraitBannerView, reshaper, 0, ifListener);
-		}
+    private static void processVideoAd(WorkerItem<VideoAdHolder> wi) {
+	VideoAdHolder vah = (VideoAdHolder) wi.holder;
+	ImageView bannerView = vah.getView(vah.bannerViewId);
+	if (bannerView != null) {
+	    imageFetcher.attachImage(vah.ad.bannerUrl, bannerView, reshaper, 0,
+		    ifListener);
 	}
-
-	private static void processVideoAd(WorkerItem<VideoAdHolder> wi) {
-		VideoAdHolder vah = (VideoAdHolder) wi.holder;
-		ImageView bannerView = vah.getView(vah.bannerViewId);
-		if (bannerView != null) {
-			imageFetcher.attachImage(vah.ad.bannerUrl, bannerView, reshaper, 0,
-					ifListener);
-		}
-		for (int id : new int[] { vah.playButtonViewId, vah.muteButtonViewId,
-				vah.fullScreenButtonViewId, vah.countDownViewId,
-				vah.skipButtonViewId }) {
-			View btn = vah.getView(id);
-			if (btn != null) {
-				setInvisible(true, btn);
-			}
-		}
-		//
-		TextureView videoView = vah.getView(vah.videoViewId);
-		if (videoView != null) {
-			setInvisible(true, videoView);
-			VastAd vastAd = vah.ad.getVastAd(ctx);
-			if (vastAd != null) {
-				wi.mp = new MediaPlayer();
-				try {
-					wi.mp.setDataSource(vastAd.getVideoUrl());
-					initVideo(videoView, bannerView, wi);
-				} catch (Exception e) {
-					wi.mp = null;
-					onError(e);
-				}
-			}
-		}
+	for (int id : new int[] { vah.playButtonViewId, vah.muteButtonViewId,
+		vah.fullScreenButtonViewId, vah.countDownViewId,
+		vah.skipButtonViewId }) {
+	    View btn = vah.getView(id);
+	    if (btn != null) {
+		setInvisible(true, btn);
+	    }
 	}
-
-	private static void initVideo(final TextureView videoView,
-			final ImageView bannerView, final WorkerItem<VideoAdHolder> wi) {
-		//
-		ViewUtil.setSize(videoView, 1, 1);
-		//
-		ViewUtil.setSurface(wi.mp, videoView);
-		//
-		final View playButton = wi.holder.getView(wi.holder.playButtonViewId);
-		final View fullScreenButton = wi.holder
-				.getView(wi.holder.fullScreenButtonViewId);
-		final View countDownView = wi.holder.getView(wi.holder.countDownViewId);
-		final View skipButton = wi.holder.getView(wi.holder.skipButtonViewId);
-		final View muteButton = wi.holder.getView(wi.holder.muteButtonViewId);
-		if (fullScreenButton != null) {
-			fullScreenButton.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					showVideoPopup(videoView, wi, videoView);
-				}
-			});
+	//
+	TextureView videoView = vah.getView(vah.videoViewId);
+	if (videoView != null) {
+	    setInvisible(true, videoView);
+	    VastAd vastAd = vah.ad.getVastAd(ctx);
+	    if (vastAd != null) {
+		wi.mp = new MediaPlayer();
+		try {
+		    wi.mp.setDataSource(vastAd.getVideoUrl());
+		    initVideo(videoView, bannerView, wi);
+		} catch (Exception e) {
+		    wi.mp = null;
+		    onError(e);
 		}
+	    }
+	}
+    }
+
+    private static void initVideo(final TextureView videoView,
+	    final ImageView bannerView, final WorkerItem<VideoAdHolder> wi) {
+	//
+	ViewUtil.setSize(videoView, 1, 1);
+	//
+	ViewUtil.setSurface(wi.mp, videoView);
+	//
+	final View playButton = wi.holder.getView(wi.holder.playButtonViewId);
+	final View fullScreenButton = wi.holder
+		.getView(wi.holder.fullScreenButtonViewId);
+	final View countDownView = wi.holder.getView(wi.holder.countDownViewId);
+	final View skipButton = wi.holder.getView(wi.holder.skipButtonViewId);
+	final View muteButton = wi.holder.getView(wi.holder.muteButtonViewId);
+	if (fullScreenButton != null) {
+	    fullScreenButton.setOnClickListener(new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+		    showVideoPopup(videoView, wi, videoView);
+		}
+	    });
+	}
+	if (playButton != null) {
+	    playButton.setOnClickListener(new OnClickListener() {
+
+		@Override
+		public void onClick(View view) {
+		    setInvisible(true, playButton);
+		    wi.mp.start();
+		    showVideoPopup(videoView, wi, null);
+		}
+	    });
+	}
+	if (skipButton != null && skipButton instanceof TextView) {
+	    ((TextView) skipButton).setText(wi.holder.ad.getVideoSkipButton());
+	    skipButton.setOnClickListener(new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+		    wi.mp.stop();
+		    parentView = bannerView;
+		    popupView = wi.holder.backViewHolder.getView();
+		    showInterstitialPopup(wi);
+		}
+	    });
+	}
+	if (muteButton != null && muteButton instanceof ImageView) {
+	    muteButton.setOnClickListener(new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+		    MiscUtils.setMuted(wi, (ImageView) muteButton,
+			    !wi.isMuted());
+		}
+	    });
+	}
+	//
+	wi.mp.setOnPreparedListener(new OnPreparedListener() {
+
+	    @Override
+	    public void onPrepared(MediaPlayer mp) {
+		ViewUtil.setSize(videoView, bannerView.getWidth(),
+			bannerView.getHeight());
+		//
+		wi.preparing = false;
+		wi.prepared = true;
+		boolean startPlaying = true;
 		if (playButton != null) {
-			playButton.setOnClickListener(new OnClickListener() {
+		    if (playButton.getVisibility() != View.VISIBLE) {
+			setInvisible(false, playButton);
+			startPlaying = false;
+		    }
+		}
+		if (startPlaying) {
+		    mp.start();
+		    setInvisible(true, bannerView);
+		    MiscUtils.setInvisible(false, videoView, fullScreenButton,
+			    countDownView, muteButton);
+		    if (countDownView != null
+			    && countDownView instanceof CountDownView) {
+			final CountDownView cdw = (CountDownView) countDownView;
+			final Handler handler = new Handler();
+			Runnable updateProgressRunnable = new Runnable() {
 
-				@Override
-				public void onClick(View view) {
-					setInvisible(true, playButton);
+			    @Override
+			    public void run() {
+				cdw.setProgress(wi.mp.getCurrentPosition(),
+					wi.mp.getDuration());
+				handler.postDelayed(this, 100);
+				if (!wi.mp.isPlaying()) {
+				    handler.removeMessages(0);
+				}
+			    }
+			};
+			updateProgressRunnable.run();
+			handler.postDelayed(new Runnable() {
+
+			    @Override
+			    public void run() {
+				MiscUtils.setInvisible(false, skipButton);
+			    }
+			}, wi.holder.ad.getVideoSkipTime() * 1000);
+		    }
+		}
+	    }
+	});
+	wi.mp.setOnCompletionListener(new OnCompletionListener() {
+
+	    @Override
+	    public void onCompletion(MediaPlayer mp) {
+		wi.played = true;
+		setInvisible(false, bannerView);
+		if (vp != null) {
+		    vp.dismiss();
+		}
+		MiscUtils.setInvisible(true, videoView, fullScreenButton,
+			countDownView, skipButton, muteButton);
+		parentView = bannerView;
+		popupView = wi.holder.backViewHolder.getView();
+		showInterstitialPopup(wi);
+	    }
+	});
+    }
+
+    private static void showVideoPopup(View parent,
+	    WorkerItem<VideoAdHolder> wi, TextureView parentTv) {
+	vp = new VideoPopup(wi, parentTv, videoPopupListener);
+	VideoAdHolder vah = (VideoAdHolder) wi.holder;
+	if (vah.backViewHolder != null) {
+	    parentView = parent;
+	    popupView = vah.backViewHolder.getView();
+	}
+	vp.show(parent);
+	wi.fullScreen = true;
+    }
+
+    private static VideoPopup vp;
+    private static View parentView, popupView;
+
+    //
+
+    private static void onLoaded() {
+	loaded = true;
+	if (listener != null) {
+	    listener.onLoaded();
+	}
+	setExecRunning(true);
+
+    }
+
+    private static void onError(Exception ex) {
+	if (listener != null) {
+	    listener.onError(ex);
+	}
+    }
+
+    //
+
+    private static void setExecRunning(boolean running) {
+	if (running) {
+	    setExecRunning(false);
+	    exec = Executors.newSingleThreadScheduledExecutor();
+	    exec.scheduleAtFixedRate(checkRunnable, CHECK_INTERVAL,
+		    CHECK_INTERVAL, MILLISECONDS);
+	} else {
+	    if (exec != null) {
+		exec.shutdownNow();
+	    }
+	}
+    }
+
+    private static void checkConfirmation() {
+	long now = System.currentTimeMillis();
+	for (WorkerItem<?> wi : workerItems) {
+	    if (!wi.confirmed) {
+		View v = wi.holder.getView();
+		if (v != null) {
+		    boolean startedTracking = (wi.firstAppeared > 0);
+		    if (startedTracking
+			    && (now - wi.firstAppeared) > SHOWN_TIME) {
+			wi.confirmed = true;
+			new SendConfirmationTask(ctx, confirmationListener,
+				wi.holder.ad).execute();
+		    } else if (!startedTracking
+			    && getVisiblePercent(v) > VISIBLE_PERCENT) {
+			wi.firstAppeared = now;
+		    }
+		}
+	    }
+	}
+    }
+
+    private static void checkVideo() {
+	for (WorkerItem<?> wi : workerItems) {
+	    if (wi.mp != null) {
+		View v = wi.holder.getView();
+		if (v != null) {
+		    boolean visibleEnough = getVisiblePercent(v) > VISIBLE_PERCENT;
+		    if (!wi.played) {
+			if (visibleEnough) {
+			    if (!isAnyPlaying()) {
+				if (!wi.preparing && !wi.prepared) {
+				    wi.preparing = true;
+				    wi.mp.prepareAsync();
+				} else if (wi.prepared && !wi.mp.isPlaying()) {
+				    if (wi.inFeedVideo() || wi.fullScreen) {
 					wi.mp.start();
-					showVideoPopup(videoView, wi, null);
+				    }
 				}
-			});
-		}
-		if (skipButton != null && skipButton instanceof TextView) {
-			((TextView) skipButton).setText(wi.holder.ad.getVideoSkipButton());
-			skipButton.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					wi.mp.stop();
-					// TODO improve
-					parentView = bannerView;
-					popupView = wi.holder.backViewHolder.getView();
-					showInterstitialPopup();
-				}
-			});
-		}
-		if (muteButton != null && muteButton instanceof ImageView) {
-			muteButton.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					MiscUtils.setMuted(wi, (ImageView) muteButton,
-							!wi.isMuted());
-				}
-			});
-		}
-		//
-		wi.mp.setOnPreparedListener(new OnPreparedListener() {
-
-			@Override
-			public void onPrepared(MediaPlayer mp) {
-				ViewUtil.setSize(videoView, bannerView.getWidth(),
-						bannerView.getHeight());
-				//
-				wi.preparing = false;
-				wi.prepared = true;
-				boolean startPlaying = true;
-				if (playButton != null) {
-					if (playButton.getVisibility() != View.VISIBLE) {
-						setInvisible(false, playButton);
-						startPlaying = false;
-					}
-				}
-				if (startPlaying) {
-					mp.start();
-					setInvisible(true, bannerView);
-					MiscUtils.setInvisible(false, videoView, fullScreenButton,
-							countDownView, muteButton);
-					if (countDownView != null
-							&& countDownView instanceof CountDownView) {
-						final CountDownView cdw = (CountDownView) countDownView;
-						final Handler handler = new Handler();
-						Runnable updateProgressRunnable = new Runnable() {
-
-							@Override
-							public void run() {
-								cdw.setProgress(wi.mp.getCurrentPosition(),
-										wi.mp.getDuration());
-								handler.postDelayed(this, 100);
-								if (!wi.mp.isPlaying()) {
-									handler.removeMessages(0);
-								}
-							}
-						};
-						updateProgressRunnable.run();
-						handler.postDelayed(new Runnable() {
-
-							@Override
-							public void run() {
-								MiscUtils.setInvisible(false, skipButton);
-							}
-						}, wi.holder.ad.getVideoSkipTime() * 1000);
-					}
-				}
+			    }
+			} else if (wi.mp.isPlaying()) {
+			    wi.mp.pause();
 			}
-		});
-		wi.mp.setOnCompletionListener(new OnCompletionListener() {
+		    }
+		}
+	    }
+	}
+    }
 
-			@Override
-			public void onCompletion(MediaPlayer mp) {
-				wi.played = true;
-				setInvisible(false, bannerView);
-				if (vp != null) {
-					vp.dismiss();
-				}
-				MiscUtils.setInvisible(true, videoView, fullScreenButton,
-						countDownView, skipButton, muteButton);
-				showInterstitialPopup();
-			}
+    private static boolean isAnyPlaying() {
+	for (WorkerItem<?> wi : workerItems) {
+	    if (wi.preparing || wi.isPlaying()) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+    private static void cleanUp() {
+	Iterator<WorkerItem<?>> it = workerItems.iterator();
+	while (it.hasNext()) {
+	    WorkerItem<?> wi = it.next();
+	    if (wi.confirmed && (wi.mp == null || wi.played)) {
+		it.remove();
+	    }
+	}
+    }
+
+    private static void showInterstitialPopup(final WorkerItem<VideoAdHolder> wi) {
+	if (popupView != null) {
+	    try {
+		ViewPopup popup = new ViewPopup(popupView);
+		popup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+
+		    @Override
+		    public void onDismiss() {
+
+			Context c = wi.getContext();
+			Intent dismissIntent = new Intent(
+				PubNativeWorker.broadcastInterstitialDismissKey);
+			c.sendBroadcast(dismissIntent);
+		    }
 
 		});
+
+		popup.show(parentView);
+	    } catch (Exception e) {
+		// XXX hack
+	    }
+	    parentView = popupView = null;
+	}
+    }
+
+    private static final Runnable checkRunnable = new Runnable() {
+
+	@Override
+	public void run() {
+	    try {
+		checkConfirmation();
+		checkVideo();
+		cleanUp();
+	    } catch (Exception e) {
+		onError(e);
+	    }
+	}
+    };
+
+    private static final AsyncTaskResultListener<HTTPResponse> confirmationListener = new AsyncTaskResultListener<HTTPResponse>() {
+
+	@Override
+	public void onAsyncTaskSuccess(HTTPResponse resp) {
+	    L.d(resp);
 	}
 
-	private static void showVideoPopup(View parent,
-			WorkerItem<VideoAdHolder> wi, TextureView parentTv) {
-		vp = new VideoPopup(wi, parentTv, videoPopupListener);
-		VideoAdHolder vah = (VideoAdHolder) wi.holder;
-		if (vah.backViewHolder != null) {
-			parentView = parent;
-			popupView = vah.backViewHolder.getView();
-		}
-		vp.show(parent);
-		wi.fullScreen = true;
+	@Override
+	public void onAsyncTaskFailure(Exception ex) {
+	    L.w(ex);
+	}
+    };
+
+    private static final ImageFetchListener ifListener = new ImageFetchListener() {
+
+	@Override
+	public void onFetchAdded(ImageView imageView, String imgUrl) {
+	    imageCounter++;
 	}
 
-	private static VideoPopup vp;
-	private static View parentView, popupView;
-
-	//
-
-	private static void onLoaded() {
-		loaded = true;
-		if (listener != null) {
-			listener.onLoaded();
-		}
-		setExecRunning(true);
-
+	@Override
+	public void onFetchCompleted(final ImageView imageView, String imgUrl,
+		Bitmap bm) {
+	    countDown();
 	}
 
-	private static void onError(Exception ex) {
-		if (listener != null) {
-			listener.onError(ex);
-		}
+	@Override
+	public void onFetchFailed(ImageView imageView, String imgUrl,
+		Exception e) {
+	    countDown();
+	    onError(e);
 	}
 
-	//
-
-	private static void setExecRunning(boolean running) {
-		if (running) {
-			setExecRunning(false);
-			exec = Executors.newSingleThreadScheduledExecutor();
-			exec.scheduleAtFixedRate(checkRunnable, CHECK_INTERVAL,
-					CHECK_INTERVAL, MILLISECONDS);
-		} else {
-			if (exec != null) {
-				exec.shutdownNow();
-			}
-		}
+	@Override
+	public void onFetchProgressChanged(ImageView imageView, String imgUrl,
+		int kBTotal, int kBReceived) {
+	    // pass
 	}
 
-	private static void checkConfirmation() {
-		long now = System.currentTimeMillis();
-		for (WorkerItem<?> wi : workerItems) {
-			if (!wi.confirmed) {
-				View v = wi.holder.getView();
-				if (v != null) {
-					boolean startedTracking = (wi.firstAppeared > 0);
-					if (startedTracking
-							&& (now - wi.firstAppeared) > SHOWN_TIME) {
-						wi.confirmed = true;
-						new SendConfirmationTask(ctx, confirmationListener,
-								wi.holder.ad).execute();
-					} else if (!startedTracking
-							&& getVisiblePercent(v) > VISIBLE_PERCENT) {
-						wi.firstAppeared = now;
-					}
-				}
-			}
-		}
+	private void countDown() {
+	    imageCounter--;
+	    if (imageCounter == 0) {
+		onLoaded();
+	    }
 	}
 
-	private static void checkVideo() {
-		for (WorkerItem<?> wi : workerItems) {
-			if (wi.mp != null) {
-				View v = wi.holder.getView();
-				if (v != null) {
-					boolean visibleEnough = getVisiblePercent(v) > VISIBLE_PERCENT;
-					if (!wi.played) {
-						if (visibleEnough) {
-							if (!isAnyPlaying()) {
-								if (!wi.preparing && !wi.prepared) {
-									wi.preparing = true;
-									wi.mp.prepareAsync();
-								} else if (wi.prepared && !wi.mp.isPlaying()) {
-									if (wi.inFeedVideo() || wi.fullScreen) {
-										wi.mp.start();
-									}
-								}
-							}
-						} else if (wi.mp.isPlaying()) {
-							wi.mp.pause();
-						}
-					}
-				}
-			}
-		}
+    };
+
+    private static VideoPopup.Listener videoPopupListener = new VideoPopup.Listener() {
+
+	@Override
+	public void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi) {
+	    vp.dismiss();
+	    ((VideoAdHolder) wi.holder).getView(
+		    ((VideoAdHolder) wi.holder).videoViewId).performClick();
 	}
 
-	private static boolean isAnyPlaying() {
-		for (WorkerItem<?> wi : workerItems) {
-			if (wi.preparing || wi.isPlaying()) {
-				return true;
-			}
-		}
-		return false;
+	@Override
+	public void didVideoPopupClose(VideoPopup vp, WorkerItem<?> wi) {
+	    popupView = parentView = null;
+	    vp.dismiss();
 	}
 
-	private static void cleanUp() {
-		Iterator<WorkerItem<?>> it = workerItems.iterator();
-		while (it.hasNext()) {
-			WorkerItem<?> wi = it.next();
-			if (wi.confirmed && (wi.mp == null || wi.played)) {
-				it.remove();
-			}
-		}
+	@Override
+	public void didVideoPopupDismiss(WorkerItem<?> wi, TextureView parentTv) {
+	    wi.fullScreen = false;
+	    if (parentTv != null) {
+		ViewUtil.setSurface(wi.mp, parentTv);
+	    } else {
+		wi.mp.stop();
+	    }
+	    vp = null;
 	}
 
-	private static void showInterstitialPopup() {
-		if (popupView != null) {
-			try {
-				new ViewPopup(popupView).show(parentView);
-			} catch (Exception e) {
-				// XXX hack
-			}
-			parentView = popupView = null;
-		}
-	}
-
-	private static final Runnable checkRunnable = new Runnable() {
-
-		@Override
-		public void run() {
-			try {
-				checkConfirmation();
-				checkVideo();
-				cleanUp();
-			} catch (Exception e) {
-				onError(e);
-			}
-		}
-	};
-
-	private static final AsyncTaskResultListener<HTTPResponse> confirmationListener = new AsyncTaskResultListener<HTTPResponse>() {
-
-		@Override
-		public void onAsyncTaskSuccess(HTTPResponse resp) {
-			L.d(resp);
-		}
-
-		@Override
-		public void onAsyncTaskFailure(Exception ex) {
-			L.w(ex);
-		}
-	};
-
-	private static final ImageFetchListener ifListener = new ImageFetchListener() {
-
-		@Override
-		public void onFetchAdded(ImageView imageView, String imgUrl) {
-			imageCounter++;
-		}
-
-		@Override
-		public void onFetchCompleted(final ImageView imageView, String imgUrl,
-				Bitmap bm) {
-			countDown();
-		}
-
-		@Override
-		public void onFetchFailed(ImageView imageView, String imgUrl,
-				Exception e) {
-			countDown();
-			onError(e);
-		}
-
-		@Override
-		public void onFetchProgressChanged(ImageView imageView, String imgUrl,
-				int kBTotal, int kBReceived) {
-			// pass
-		}
-
-		private void countDown() {
-			imageCounter--;
-			if (imageCounter == 0) {
-				onLoaded();
-			}
-		}
-
-	};
-
-	private static VideoPopup.Listener videoPopupListener = new VideoPopup.Listener() {
-
-		@Override
-		public void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi) {
-			vp.dismiss();
-			((VideoAdHolder) wi.holder).getView(
-					((VideoAdHolder) wi.holder).videoViewId).performClick();
-		}
-
-		@Override
-		public void didVideoPopupClose(VideoPopup vp, WorkerItem<?> wi) {
-			popupView = parentView = null;
-			vp.dismiss();
-		}
-
-		@Override
-		public void didVideoPopupDismiss(WorkerItem<?> wi, TextureView parentTv) {
-			wi.fullScreen = false;
-			if (parentTv != null) {
-				ViewUtil.setSurface(wi.mp, parentTv);
-			} else {
-				wi.mp.stop();
-			}
-			vp = null;
-		}
-
-	};
+    };
 
 }

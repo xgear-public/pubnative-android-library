@@ -35,58 +35,66 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public abstract class AbstractSingleHolderListActivity<T extends View> extends
-		AbstractDemoActivity {
+        AbstractDemoActivity
+{
+    private ListView listView;
+    protected T      view;
 
-	private ListView listView;
-	protected T view;
+    @Override
+    public void onPreInject()
+    {
+        setContentView(R.layout.activity_list);
+    }
 
-	@Override
-	public void onPreInject() {
-		setContentView(R.layout.activity_list);
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        listView = ViewUtils.findViewById(this, R.id.view_list);
+        listView.setAdapter(new ListAdapter(this));
+        view = makeView();
+        show();
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		listView = ViewUtils.findViewById(this, R.id.view_list);
-		listView.setAdapter(new ListAdapter(this));
-		view = makeView();
-		show();
-	}
+    protected int getRowCount()
+    {
+        return 8;
+    }
 
-	protected int getRowCount() {
-		return 8;
-	}
+    protected int getViewRow()
+    {
+        return 3;
+    }
 
-	protected int getViewRow() {
-		return 3;
-	}
+    protected abstract T makeView();
 
-	protected abstract T makeView();
+    private class ListAdapter extends ArrayAdapter<String>
+    {
+        public ListAdapter(Context ctx)
+        {
+            super(ctx);
+        }
 
-	private class ListAdapter extends ArrayAdapter<String> {
+        @Override
+        public int getCount()
+        {
+            return getRowCount();
+        }
 
-		public ListAdapter(Context ctx) {
-			super(ctx);
-		}
-
-		@Override
-		public int getCount() {
-			return getRowCount();
-		}
-
-		@Override
-		public View getView(int position, View view, ViewGroup parent) {
-			if (position != getViewRow()) {
-				view = LayoutInflater.from(getContext()).inflate(
-						android.R.layout.simple_list_item_1, null);
-				TextView tv = ViewUtils.findViewById(view, android.R.id.text1);
-				tv.setText("Row " + position);
-				return view;
-			} else {
-				return AbstractSingleHolderListActivity.this.view;
-			}
-		}
-	}
-
+        @Override
+        public View getView(int position, View view, ViewGroup parent)
+        {
+            if (position != getViewRow())
+            {
+                view = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, null);
+                TextView tv = ViewUtils.findViewById(view, android.R.id.text1);
+                tv.setText("Row " + position);
+                return view;
+            }
+            else
+            {
+                return AbstractSingleHolderListActivity.this.view;
+            }
+        }
+    }
 }

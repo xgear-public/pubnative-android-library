@@ -30,39 +30,41 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
-public class ViewPopup extends PopupWindow implements View.OnClickListener {
+public class ViewPopup extends PopupWindow implements View.OnClickListener
+{
+    private View closeView;
 
-	private View closeView;
+    public ViewPopup(View view)
+    {
+        super(wrap(view), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, true);
+        setBackgroundDrawable(new ColorDrawable());
+        closeView = getContentView().findViewById(R.id.view_close);
+        closeView.setOnClickListener(this);
+    }
 
-	public ViewPopup(View view) {
-		super(wrap(view), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
-				true);
-		setBackgroundDrawable(new ColorDrawable());
-		closeView = getContentView().findViewById(R.id.view_close);
-		closeView.setOnClickListener(this);
-	}
+    public void show(View parent)
+    {
+        showAtLocation(parent, Gravity.CENTER, 0, 0);
+    }
 
-	public void show(View parent) {
-		showAtLocation(parent, Gravity.CENTER, 0, 0);
-	}
+    @Override
+    public void onClick(View v)
+    {
+        if (v == closeView)
+        {
+            didClickClose();
+        }
+    }
 
-	@Override
-	public void onClick(View v) {
-		if (v == closeView) {
-			didClickClose();
-		}
-	}
+    protected void didClickClose()
+    {
+        dismiss();
+    }
 
-	protected void didClickClose() {
-		dismiss();
-	}
-
-	private static View wrap(View view) {
-		RelativeLayout rl = (RelativeLayout) LayoutInflater.from(
-				view.getContext()).inflate(R.layout.pn_view_popup, null);
-		rl.addView(view, 0, new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.MATCH_PARENT));
-		return rl;
-	}
-
+    private static View wrap(View view)
+    {
+        RelativeLayout rl = (RelativeLayout) LayoutInflater.from(view.getContext()).inflate(R.layout.pn_view_popup, null);
+        rl.addView(view, 0, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        return rl;
+    }
 }

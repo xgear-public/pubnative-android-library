@@ -38,127 +38,137 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class VideoPopup extends ViewPopup {
+public class VideoPopup extends ViewPopup
+{
+    public interface Listener
+    {
+        void didVideoPopupClose(VideoPopup vp, WorkerItem<?> wi);
 
-	public interface Listener {
-		void didVideoPopupClose(VideoPopup vp, WorkerItem<?> wi);
+        void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi);
 
-		void didVideoPopupSkip(VideoPopup vp, WorkerItem<?> wi);
+        void didVideoPopupDismiss(WorkerItem<?> wi, TextureView parentTv);
+    }
 
-		void didVideoPopupDismiss(WorkerItem<?> wi, TextureView parentTv);
-	}
+    private final WorkerItem<VideoAdHolder> wi;
+    private final TextureView               parentTv;
+    private final Listener                  l;
+    private final TextureView               tv;
+    private final ImageView                 muteView;
+    private final TextView                  skipButtonView;
+    private final CountDownView             countDownView;
+    private Handler                         handler;
 
-	private final WorkerItem<VideoAdHolder> wi;
-	private final TextureView parentTv;
+    public VideoPopup(WorkerItem<VideoAdHolder> wi, TextureView parentTv, Listener l)
+    {
+        super(LayoutInflater.from(wi.getContext()).inflate(R.layout.pn_view_video, null));
+        this.wi = wi;
+        this.parentTv = parentTv;
+        this.l = l;
+        setWidth(LayoutParams.MATCH_PARENT);
+        setHeight(LayoutParams.MATCH_PARENT);
+        setFocusable(true);
+        setBackgroundDrawable(new ColorDrawable());
+        handler = new Handler();
+        tv = findViewById(getContentView(), R.id.view_video);
+        muteView = findViewById(getContentView(), R.id.view_mute);
+        skipButtonView = findViewById(getContentView(), R.id.view_skip);
+        countDownView = findViewById(getContentView(), R.id.view_count_down);
+        //
+        tv.setOnClickListener(this);
+        muteView.setOnClickListener(this);
+        setMuted(false);
+        skipButtonView.setOnClickListener(this);
+    }
 
-	private final Listener l;
+    private void initSkip()
+    {
+        skipButtonView.setOnClickListener(this);
+        skipButtonView.setText(wi.holder.ad.getVideoSkipButton());
+        setInvisible(true, skipButtonView);
+        int skipAvailableIn = wi.holder.ad.getVideoSkipTime() * 1000 - wi.mp.getCurrentPosition();
+        handler.postDelayed(showSkipRunnable, skipAvailableIn);
+    }
 
-	private final TextureView tv;
-	private final ImageView muteView;
-	private final TextView skipButtonView;
-	private final CountDownView countDownView;
+    @Override
+    public void show(View parent)
+    {
+        super.show(parent);
+        ViewUtil.setSurface(wi.mp, tv);
+        //
+        initSkip();
+        updateProgressRunnable.run();
+        updateVideoSizeRunnable.run();
+    }
 
-	private Handler handler;
+    @Override
+    public void dismiss()
+    {
+        handler.removeMessages(0);
+        l.didVideoPopupDismiss(wi, parentTv);
+        super.dismiss();
+    }
 
-	public VideoPopup(WorkerItem<VideoAdHolder> wi, TextureView parentTv,
-			Listener l) {
-		super(LayoutInflater.from(wi.getContext()).inflate(
-				R.layout.pn_view_video, null));
-		this.wi = wi;
-		this.parentTv = parentTv;
-		this.l = l;
-		setWidth(LayoutParams.MATCH_PARENT);
-		setHeight(LayoutParams.MATCH_PARENT);
-		setFocusable(true);
-		setBackgroundDrawable(new ColorDrawable());
-		handler = new Handler();
-		tv = findViewById(getContentView(), R.id.view_video);
-		muteView = findViewById(getContentView(), R.id.view_mute);
-		skipButtonView = findViewById(getContentView(), R.id.view_skip);
-		countDownView = findViewById(getContentView(), R.id.view_count_down);
-		//
-		tv.setOnClickListener(this);
-		muteView.setOnClickListener(this);
-		setMuted(false);
-		skipButtonView.setOnClickListener(this);
-	}
+    @Override
+    public void onClick(View v)
+    {
+        if (v == muteView)
+        {
+            setMuted(!wi.isMuted());
+        }
+        else
+            if (v == tv || v == skipButtonView)
+            {
+                l.didVideoPopupSkip(this, wi);
+            }
+            else
+            {
+                super.onClick(v);
+            }
+    }
 
-	private void initSkip() {
-		skipButtonView.setOnClickListener(this);
-		skipButtonView.setText(wi.holder.ad.getVideoSkipButton());
-		setInvisible(true, skipButtonView);
-		int skipAvailableIn = wi.holder.ad.getVideoSkipTime() * 1000
-				- wi.mp.getCurrentPosition();
-		handler.postDelayed(showSkipRunnable, skipAvailableIn);
-	}
+    @Override
+    protected void didClickClose()
+    {
+        l.didVideoPopupClose(this, wi);
+    }
 
-	@Override
-	public void show(View parent) {
-		super.show(parent);
-		ViewUtil.setSurface(wi.mp, tv);
-		//
-		initSkip();
-		updateProgressRunnable.run();
-		updateVideoSizeRunnable.run();
-	}
+    private void setMuted(boolean muted)
+    {
+        MiscUtils.setMuted(wi, muteView, muted);
+    }
 
-	@Override
-	public void dismiss() {
-		handler.removeMessages(0);
-		l.didVideoPopupDismiss(wi, parentTv);
-		super.dismiss();
-	}
+    private final Runnable showSkipRunnable        = new Runnable()
+                                                   {
+                                                       @Override
+                                                       public void run()
+                                                       {
+                                                           setInvisible(false, skipButtonView);
+                                                       }
+                                                   };
+    private final Runnable updateProgressRunnable  = new Runnable()
+                                                   {
+                                                       @Override
+                                                       public void run()
+                                                       {
+                                                           countDownView.setProgress(wi.mp.getCurrentPosition(), wi.mp.getDuration());
+                                                           handler.postDelayed(this, 100);
+                                                       }
+                                                   };
+    private final Runnable updateVideoSizeRunnable = new Runnable()
+                                                   {
+                                                       private int lastW;
 
-	@Override
-	public void onClick(View v) {
-		if (v == muteView) {
-			setMuted(!wi.isMuted());
-		} else if (v == tv || v == skipButtonView) {
-			l.didVideoPopupSkip(this, wi);
-		} else {
-			super.onClick(v);
-		}
-	}
-
-	@Override
-	protected void didClickClose() {
-		l.didVideoPopupClose(this, wi);
-	}
-
-	private void setMuted(boolean muted) {
-		MiscUtils.setMuted(wi, muteView, muted);
-	}
-
-	private final Runnable showSkipRunnable = new Runnable() {
-
-		@Override
-		public void run() {
-			setInvisible(false, skipButtonView);
-		}
-	};
-	private final Runnable updateProgressRunnable = new Runnable() {
-
-		@Override
-		public void run() {
-			countDownView.setProgress(wi.mp.getCurrentPosition(),
-					wi.mp.getDuration());
-			handler.postDelayed(this, 100);
-		}
-	};
-	private final Runnable updateVideoSizeRunnable = new Runnable() {
-
-		private int lastW;
-
-		@Override
-		public void run() {
-			int w = getContentView().getWidth();
-			if (lastW != w) {
-				Point p = ViewUtil.getFullSceeenSize(tv.getContext(), wi.mp);
-				ViewUtil.setSize(tv, p.x, p.y);
-				w = lastW;
-			}
-			handler.postDelayed(this, 100);
-		}
-	};
-
+                                                       @Override
+                                                       public void run()
+                                                       {
+                                                           int w = getContentView().getWidth();
+                                                           if (lastW != w)
+                                                           {
+                                                               Point p = ViewUtil.getFullSceeenSize(tv.getContext(), wi.mp);
+                                                               ViewUtil.setSize(tv, p.x, p.y);
+                                                               w = lastW;
+                                                           }
+                                                           handler.postDelayed(this, 100);
+                                                       }
+                                                   };
 }

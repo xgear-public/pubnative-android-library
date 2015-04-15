@@ -31,48 +31,55 @@ import org.droidparts.net.image.ImageReshaper;
 
 import android.app.Activity;
 
-public class PubNative {
+public class PubNative
+{
+    public static void showAd(String appToken, AdHolder<?>... holders)
+    {
+        PubNativeWorker.showAd(appToken, holders);
+    }
 
-	public static void showAd(String appToken, AdHolder<?>... holders) {
-		PubNativeWorker.showAd(appToken, holders);
-	}
+    public static void showAd(AdRequest req, AdHolder<?>... holders)
+    {
+        PubNativeWorker.showAd(req, holders);
+    }
 
-	public static void showAd(AdRequest req, AdHolder<?>... holders) {
-		PubNativeWorker.showAd(req, holders);
-	}
+    public static void setListener(PubNativeListener listener)
+    {
+        PubNativeWorker.setListener(listener);
+    }
 
-	public static void setListener(PubNativeListener listener) {
-		PubNativeWorker.setListener(listener);
-	}
+    public static void setImageReshaper(ImageReshaper reshaper)
+    {
+        PubNativeWorker.setImageReshaper(reshaper);
+    }
 
-	public static void setImageReshaper(ImageReshaper reshaper) {
-		PubNativeWorker.setImageReshaper(reshaper);
-	}
+    public static void showInPlayStoreViaBrowser(Activity act, Ad ad)
+    {
+        new WebRedirector(act, ad.getPackageName(), ad.clickUrl).doBrowserRedirect();
+    }
 
-	public static void showInPlayStoreViaBrowser(Activity act, Ad ad) {
-		new WebRedirector(act, ad.getPackageName(), ad.clickUrl)
-				.doBrowserRedirect();
-	}
+    public static void showInPlayStoreViaDialog(Activity act, Ad ad)
+    {
+        showInPlayStoreViaDialog(act, ad, 3000);
+    }
 
-	public static void showInPlayStoreViaDialog(Activity act, Ad ad) {
-		showInPlayStoreViaDialog(act, ad, 3000);
-	}
+    public static void showInPlayStoreViaDialog(Activity act, Ad ad, int timeout)
+    {
+        new WebRedirector(act, ad.getPackageName(), ad.clickUrl).doBackgroundRedirect(timeout);
+    }
 
-	public static void showInPlayStoreViaDialog(Activity act, Ad ad, int timeout) {
-		new WebRedirector(act, ad.getPackageName(), ad.clickUrl)
-				.doBackgroundRedirect(timeout);
-	}
+    public static void onPause()
+    {
+        PubNativeWorker.onPause();
+    }
 
-	public static void onPause() {
-		PubNativeWorker.onPause();
-	}
+    public static void onResume()
+    {
+        PubNativeWorker.onResume();
+    }
 
-	public static void onResume() {
-		PubNativeWorker.onResume();
-	}
-
-	public static void onDestroy() {
-		PubNativeWorker.onDestroy();
-	}
-
+    public static void onDestroy()
+    {
+        PubNativeWorker.onDestroy();
+    }
 }

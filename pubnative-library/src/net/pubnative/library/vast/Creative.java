@@ -26,43 +26,40 @@ import java.util.ArrayList;
 import org.droidparts.annotation.serialize.XML;
 import org.droidparts.model.Model;
 
-public class Creative extends Model {
-	private static final long serialVersionUID = 1L;
+public class Creative extends Model
+{
+    private static final long                serialVersionUID = 1L;
+    @XML(tag = "Linear" + XML.SUB + "Duration")
+    public String                            duration;
+    //
+    @XML(tag = "Linear" + XML.SUB + "TrackingEvents", attribute = "Tracking")
+    public ArrayList<Creative.TrackingEvent> trackingEvents;
+    @XML(tag = "Linear" + XML.SUB + "MediaFiles", attribute = "MediaFile")
+    public ArrayList<Creative.MediaFile>     mediaFiles;
 
-	@XML(tag = "Linear" + XML.SUB + "Duration")
-	public String duration;
-	//
-	@XML(tag = "Linear" + XML.SUB + "TrackingEvents", attribute = "Tracking")
-	public ArrayList<Creative.TrackingEvent> trackingEvents;
-	@XML(tag = "Linear" + XML.SUB + "MediaFiles", attribute = "MediaFile")
-	public ArrayList<Creative.MediaFile> mediaFiles;
-
-	//
-
-	public static class TrackingEvent extends Model {
-		private static final long serialVersionUID = 1L;
-
-		@XML(attribute = "event")
-		public String event;
-		@XML
-		public String url;
-	}
-
-	public static class MediaFile extends Model {
-		private static final long serialVersionUID = 1L;
-
-		@XML(attribute = "delivery")
-		public String delivery;
-		@XML(attribute = "height")
-		public int height;
-		@XML(attribute = "scalable")
-		public boolean scalable;
-		@XML(attribute = "type")
-		public String type;
-		@XML(attribute = "width")
-		public int width;
-
-		@XML
-		public String url;
-	}
+    //
+    public static class TrackingEvent extends Model
+    {
+        private static final long serialVersionUID = 1L;
+        @XML(attribute = "event")
+        public String             event;
+        @XML
+        public String             url;
+    }
+    public static class MediaFile extends Model
+    {
+        private static final long serialVersionUID = 1L;
+        @XML(attribute = "delivery")
+        public String             delivery;
+        @XML(attribute = "height")
+        public int                height;
+        @XML(attribute = "scalable")
+        public boolean            scalable;
+        @XML(attribute = "type")
+        public String             type;
+        @XML(attribute = "width")
+        public int                width;
+        @XML
+        public String             url;
+    }
 }

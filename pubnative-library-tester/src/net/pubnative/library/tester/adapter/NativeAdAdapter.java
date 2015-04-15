@@ -28,26 +28,26 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 
-public class NativeAdAdapter extends AbstractAdHolderAdapter<NativeAdHolder> {
+public class NativeAdAdapter extends AbstractAdHolderAdapter<NativeAdHolder>
+{
+    public NativeAdAdapter(Context ctx)
+    {
+        super(ctx);
+    }
 
-	public NativeAdAdapter(Context ctx) {
-		super(ctx);
-	}
-
-	@Override
-	public NativeAdHolder makeAndAddHolder() {
-		View view = LayoutInflater.from(getContext()).inflate(
-				R.layout.view_response_native_format, null);
-		NativeAdHolder h = new NativeAdHolder(view);
-		h.iconViewId = R.id.view_icon;
-		h.titleViewId = R.id.view_title;
-		h.subTitleViewId = R.id.view_subtitle;
-		h.ratingViewId = R.id.view_rating;
-		h.descriptionViewId = R.id.view_description;
-		h.bannerViewId = R.id.view_banner;
-		h.downloadViewId = R.id.view_download;
-		add(h);
-		return h;
-	}
-
+    @Override
+    public NativeAdHolder makeAndAddHolder()
+    {
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.view_response_native_format, null);
+        NativeAdHolder h = new NativeAdHolder(view);
+        h.iconViewId = R.id.view_icon;
+        h.titleViewId = R.id.view_title;
+        h.subTitleViewId = R.id.view_subtitle;
+        h.ratingViewId = R.id.view_rating;
+        h.descriptionViewId = R.id.view_description;
+        h.bannerViewId = R.id.view_banner;
+        h.downloadViewId = R.id.view_download;
+        add(h);
+        return h;
+    }
 }

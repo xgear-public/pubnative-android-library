@@ -21,8 +21,7 @@
  */
 package net.pubnative.interstitials.api;
 
-public enum PubNativeInterstitialsType {
-
-	INTERSTITIAL, VIDEO_INTERSTITIAL
-
+public enum PubNativeInterstitialsType
+{
+    INTERSTITIAL, VIDEO_INTERSTITIAL
 }

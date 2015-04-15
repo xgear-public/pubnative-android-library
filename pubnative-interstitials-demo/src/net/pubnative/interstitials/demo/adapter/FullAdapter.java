@@ -31,35 +31,37 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class FullAdapter extends ArrayAdapter<NativeAdHolder> {
+public class FullAdapter extends ArrayAdapter<NativeAdHolder>
+{
+    public FullAdapter(Context ctx)
+    {
+        super(ctx);
+    }
 
-	public FullAdapter(Context ctx) {
-		super(ctx);
-	}
+    public NativeAdHolder makeAndAddHolder()
+    {
+        View view = LayoutInflater.from(getContext()).inflate(getLayoutId(), null);
+        NativeAdHolder h = new NativeAdHolder(view);
+        h.iconViewId = R.id.view_icon;
+        h.titleViewId = R.id.view_title;
+        h.subTitleViewId = R.id.view_description;
+        h.ratingViewId = R.id.view_rating;
+        h.descriptionViewId = R.id.view_description;
+        h.categoryViewId = R.id.view_category;
+        h.bannerViewId = R.id.view_banner;
+        h.downloadViewId = R.id.view_download;
+        add(h);
+        return h;
+    }
 
-	public NativeAdHolder makeAndAddHolder() {
-		View view = LayoutInflater.from(getContext()).inflate(getLayoutId(),
-				null);
-		NativeAdHolder h = new NativeAdHolder(view);
-		h.iconViewId = R.id.view_icon;
-		h.titleViewId = R.id.view_title;
-		h.subTitleViewId = R.id.view_description;
-		h.ratingViewId = R.id.view_rating;
-		h.descriptionViewId = R.id.view_description;
-		h.categoryViewId = R.id.view_category;
-		h.bannerViewId = R.id.view_banner;
-		h.downloadViewId = R.id.view_download;
-		add(h);
-		return h;
-	}
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        return getItem(position).getView();
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		return getItem(position).getView();
-	}
-
-	protected int getLayoutId() {
-		return R.layout.view_row_full;
-	}
-
+    protected int getLayoutId()
+    {
+        return R.layout.view_row_full;
+    }
 }

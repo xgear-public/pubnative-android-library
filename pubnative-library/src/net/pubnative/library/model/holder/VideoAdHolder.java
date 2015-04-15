@@ -25,26 +25,25 @@ import net.pubnative.library.model.AdFormat;
 import net.pubnative.library.model.response.NativeAd;
 import android.view.View;
 
-public class VideoAdHolder extends AdHolder<NativeAd> {
+public class VideoAdHolder extends AdHolder<NativeAd>
+{
+    public int            bannerViewId;
+    public int            videoViewId;
+    public int            playButtonViewId;
+    public int            countDownViewId;
+    public int            fullScreenButtonViewId;
+    public int            skipButtonViewId;
+    public int            muteButtonViewId;
+    public NativeAdHolder backViewHolder;
 
-	public int bannerViewId;
+    public VideoAdHolder(View view)
+    {
+        super(view);
+    }
 
-	public int videoViewId;
-	public int playButtonViewId;
-	public int countDownViewId;
-	public int fullScreenButtonViewId;
-	public int skipButtonViewId;
-	public int muteButtonViewId;
-
-	public NativeAdHolder backViewHolder;
-
-	public VideoAdHolder(View view) {
-		super(view);
-	}
-
-	@Override
-	public AdFormat getFormat() {
-		return AdFormat.VIDEO;
-	}
-
+    @Override
+    public AdFormat getFormat()
+    {
+        return AdFormat.VIDEO;
+    }
 }

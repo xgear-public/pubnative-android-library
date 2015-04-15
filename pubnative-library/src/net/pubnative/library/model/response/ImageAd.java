@@ -26,19 +26,15 @@ import net.pubnative.library.PubNativeContract;
 import org.droidparts.annotation.serialize.JSON;
 
 public class ImageAd extends Ad implements
-		PubNativeContract.Response.ImageFormat {
-	private static final long serialVersionUID = 1L;
-
-	@JSON(key = IMAGE_URL)
-	public String imageUrl;
-
-	@JSON(key = STORE_ID, optional = true)
-	public String storeId;
-
-	@JSON(key = WIDTH)
-	public int width;
-
-	@JSON(key = HEIGHT)
-	public int height;
-
+        PubNativeContract.Response.ImageFormat
+{
+    private static final long serialVersionUID = 1L;
+    @JSON(key = IMAGE_URL)
+    public String             imageUrl;
+    @JSON(key = STORE_ID, optional = true)
+    public String             storeId;
+    @JSON(key = WIDTH)
+    public int                width;
+    @JSON(key = HEIGHT)
+    public int                height;
 }

@@ -30,45 +30,52 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class InterstitialView extends LinearLayout {
+public class InterstitialView extends LinearLayout
+{
+    private View descriptionView;
 
-	public InterstitialView(Context ctx) {
-		super(ctx);
-		init();
-	}
+    public InterstitialView(Context ctx)
+    {
+        super(ctx);
+        init();
+    }
 
-	public InterstitialView(Context ctx, AttributeSet attrs) {
-		super(ctx, attrs);
-		init();
-	}
+    public InterstitialView(Context ctx, AttributeSet attrs)
+    {
+        super(ctx, attrs);
+        init();
+    }
 
-	public InterstitialView(Context ctx, AttributeSet attrs, int defStyle) {
-		super(ctx, attrs, defStyle);
-		init();
-	}
+    public InterstitialView(Context ctx, AttributeSet attrs, int defStyle)
+    {
+        super(ctx, attrs, defStyle);
+        init();
+    }
 
-	private void init() {
-		inflate(getContext(), R.layout.pn_view_interstitial, this);
-		setBackgroundColor(getResources().getColor(android.R.color.white));
-	}
+    private void init()
+    {
+        inflate(getContext(), R.layout.pn_view_interstitial, this);
+        descriptionView = findViewById(R.id.view_description);
+        setBackgroundColor(getResources().getColor(android.R.color.white));
+    }
 
-	@Override
-	protected void onAttachedToWindow() {
-		super.onAttachedToWindow();
-		applyOrientation();
-	}
+    @Override
+    protected void onAttachedToWindow()
+    {
+        super.onAttachedToWindow();
+        applyOrientation();
+    }
 
-	@Override
-	protected void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		applyOrientation();
-	}
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+        applyOrientation();
+    }
 
-	private void applyOrientation() {
-
-		View descriptionView = findViewById(R.id.view_description);
-
-		boolean isPortrait = ScreenUtil.isPortrait(getContext());
-		setGone(!isPortrait, descriptionView);
-	}
+    private void applyOrientation()
+    {
+        boolean isPortrait = ScreenUtil.isPortrait(getContext());
+        setGone(!isPortrait, descriptionView);
+    }
 }
