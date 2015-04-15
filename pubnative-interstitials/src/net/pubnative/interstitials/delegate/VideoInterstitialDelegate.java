@@ -85,7 +85,6 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     public void onResume()
     {
         super.onResume();
-        // Get broadcasted filter
         holderView.getContext().registerReceiver(interstitialBroadcastReceiver, new IntentFilter(PubNativeWorker.broadcastInterstitialDismissKey));
     }
 
