@@ -36,47 +36,52 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 
 public class IconActivity extends AbstractDemoActivity implements
-		OnClickListener {
+        OnClickListener
+{
+    @InjectView(id = R.id.view_icon, click = true)
+    private ImageView      iconView;
+    private NativeAdHolder iconHolder;
 
-	@InjectView(id = R.id.view_icon, click = true)
-	private ImageView iconView;
+    @Override
+    public void onPreInject()
+    {
+        setContentView(R.layout.activity_icon);
+    }
 
-	private NativeAdHolder iconHolder;
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        makeHolder();
+        showIcon();
+    }
 
-	@Override
-	public void onPreInject() {
-		setContentView(R.layout.activity_icon);
-	}
+    private void makeHolder()
+    {
+        iconHolder = new NativeAdHolder(findViewById(R.id.view_root));
+        iconHolder.iconViewId = R.id.view_icon;
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		makeHolder();
-		showIcon();
-	}
+    private void showIcon()
+    {
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        req.fillInDefaults(this);
+        req.setIconSize(300, 300);
+        PubNative.showAd(req, iconHolder);
+    }
 
-	private void makeHolder() {
-		iconHolder = new NativeAdHolder(findViewById(R.id.view_root));
-		iconHolder.iconViewId = R.id.view_icon;
-	}
+    @Override
+    public void onClick(View view)
+    {
+        if (view == iconView)
+        {
+            PubNative.showInPlayStoreViaDialog(this, iconHolder.ad);
+        }
+    }
 
-	private void showIcon() {
-		AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
-		req.fillInDefaults(this);
-		req.setIconSize(300, 300);
-		PubNative.showAd(req, iconHolder);
-	}
-
-	@Override
-	public void onClick(View view) {
-		if (view == iconView) {
-			PubNative.showInPlayStoreViaDialog(this, iconHolder.ad);
-		}
-	}
-
-	@Override
-	protected NativeAdHolder[] getAdHolders() {
-		return null;
-	}
-
+    @Override
+    protected NativeAdHolder[] getAdHolders()
+    {
+        return null;
+    }
 }

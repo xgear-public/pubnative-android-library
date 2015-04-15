@@ -24,15 +24,16 @@ package net.pubnative.interstitials.demo.adapter;
 import net.pubnative.interstitials.demo.R;
 import android.content.Context;
 
-public class BriefAdapter extends FullAdapter {
+public class BriefAdapter extends FullAdapter
+{
+    public BriefAdapter(Context ctx)
+    {
+        super(ctx);
+    }
 
-	public BriefAdapter(Context ctx) {
-		super(ctx);
-	}
-
-	@Override
-	protected int getLayoutId() {
-		return R.layout.view_row_list_brief;
-	}
-
+    @Override
+    protected int getLayoutId()
+    {
+        return R.layout.view_row_list_brief;
+    }
 }

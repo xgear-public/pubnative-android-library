@@ -47,185 +47,203 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-public abstract class AbstractDelegate implements OnClickListener {
+public abstract class AbstractDelegate implements OnClickListener
+{
+    public static boolean backgroundRedirectEnabled = true;
 
-	public static boolean backgroundRedirectEnabled = true;
+    public static AbstractDelegate get(PubNativeInterstitialsActivity act, PubNativeInterstitialsType type, int adCount)
+    {
+        switch (type)
+        {
+        case INTERSTITIAL:
+            return new InterstitialDelegate(act);
+        case VIDEO_INTERSTITIAL:
+            return new VideoInterstitialDelegate(act);
+        default:
+            throw new IllegalArgumentException(type.toString());
+        }
+    }
 
-	public static AbstractDelegate get(PubNativeInterstitialsActivity act,
-			PubNativeInterstitialsType type, int adCount) {
-		switch (type) {
-		case INTERSTITIAL:
-			return new InterstitialDelegate(act);
-		case VIDEO_INTERSTITIAL:
-			return new VideoInterstitialDelegate(act);
-		default:
-			throw new IllegalArgumentException(type.toString());
-		}
-	}
+    protected final PubNativeInterstitialsActivity act;
+    protected final int                            adCount;
+    protected View                                 contentView;
+    protected View                                 holderView;
+    protected View                                 closeBtn;
 
-	protected final PubNativeInterstitialsActivity act;
-	protected final int adCount;
+    public AbstractDelegate(PubNativeInterstitialsActivity act, int adCount)
+    {
+        this.act = act;
+        this.adCount = adCount;
+    }
 
-	protected View contentView;
-	protected View holderView;
+    public void onCreate()
+    {
+        contentView = LayoutInflater.from(act).inflate(getContentLayoutId(), null);
+        setInvisible(true, contentView);
+        // closeBtn = findViewById(R.id.btn_close);
+        if (closeBtn != null)
+        {
+            closeBtn.setOnClickListener(this);
+        }
+        holderView = findViewById(R.id.view_holder);
+        act.setContentView(contentView);
+    }
 
-	protected View closeBtn;
+    public final AdRequest getAdRequest(String appKey)
+    {
+        AdRequest req = new AdRequest(appKey, getAdFormat());
+        req.fillInDefaults(act);
+        req.setAdCount(adCount);
+        return req;
+    }
 
-	public AbstractDelegate(PubNativeInterstitialsActivity act, int adCount) {
-		this.act = act;
-		this.adCount = adCount;
-	}
+    protected AdFormat getAdFormat()
+    {
+        return AdFormat.NATIVE;
+    }
 
-	public void onCreate() {
-		contentView = LayoutInflater.from(act).inflate(getContentLayoutId(),
-				null);
-		setInvisible(true, contentView);
-		closeBtn = findViewById(R.id.btn_close);
-		closeBtn.setOnClickListener(this);
-		holderView = findViewById(R.id.view_holder);
-		act.setContentView(contentView);
-	}
+    public abstract AdHolder<?>[] getAdHolders();
 
-	public final AdRequest getAdRequest(String appKey) {
-		AdRequest req = new AdRequest(appKey, getAdFormat());
-		req.fillInDefaults(act);
-		req.setAdCount(adCount);
-		return req;
-	}
+    public void onRotate()
+    {}
 
-	protected AdFormat getAdFormat() {
-		return AdFormat.NATIVE;
-	}
+    public void onLoadingDone()
+    {
+        setInvisible(false, contentView);
+        notifyOnShown(getType());
+    }
 
-	public abstract AdHolder<?>[] getAdHolders();
+    @Override
+    public void onClick(View v)
+    {
+        if (closeBtn != null && v == closeBtn)
+        {
+            act.finish();
+        }
+    }
 
-	public void onRotate() {
-	}
+    //
+    public View getContentView()
+    {
+        return contentView;
+    }
 
-	public void onLoadingDone() {
-		setInvisible(false, contentView);
-		notifyOnShown(getType());
-	}
+    public void onStop()
+    {}
 
-	@Override
-	public void onClick(View v) {
-		if (v == closeBtn) {
-			act.finish();
-		}
-	}
+    public void onResume()
+    {
+        PubNativeWorker.onResume();
+    }
 
-	//
+    public void onPause()
+    {
+        PubNativeWorker.onPause();
+    }
 
-	public View getContentView() {
-		return contentView;
-	}
+    public void onActivityFinish()
+    {
+        notifyOnClosed(getType());
+    }
 
-	public void onResume() {
-		PubNativeWorker.onResume();
-	}
+    //
+    public abstract PubNativeInterstitialsType getType();
 
-	public void onPause() {
-		PubNativeWorker.onPause();
-	}
+    protected abstract int getContentLayoutId();
 
-	public void onActivityFinish() {
-		notifyOnClosed(getType());
-	}
+    protected final <T extends View> T findViewById(int id)
+    {
+        return ViewUtils.findViewById(contentView, id);
+    }
 
-	//
+    //
+    protected final void showInPlayStore(NativeAd ad)
+    {
+        if (backgroundRedirectEnabled)
+        {
+            PubNative.showInPlayStoreViaDialog(act, ad);
+        }
+        else
+        {
+            PubNative.showInPlayStoreViaBrowser(act, ad);
+        }
+        notifyOnTapped(getType(), ad);
+    }
 
-	public abstract PubNativeInterstitialsType getType();
+    //
+    public static void init(Context ctx, String appKey)
+    {
+        AbstractDelegate.ctx = ctx.getApplicationContext();
+        InMem.appKey = appKey;
+    }
 
-	protected abstract int getContentLayoutId();
+    public static void addListener(PubNativeInterstitialsListener listener)
+    {
+        listeners.put(listener, null);
+    }
 
-	protected final <T extends View> T findViewById(int id) {
-		return ViewUtils.findViewById(contentView, id);
-	}
+    public static void removeListener(PubNativeInterstitialsListener listener)
+    {
+        listeners.remove(listener);
+    }
 
-	//
+    //
+    public static void show(Activity act, PubNativeInterstitialsType type, int adCount)
+    {
+        callingActivityIsFullScreen = ScreenUtil.isFullScreen(act);
+        showCalled = true;
+        Intent intent = PubNativeInterstitialsActivity.getShowPromosIntent(ctx, callingActivityIsFullScreen, type, adCount);
+        ctx.startActivity(intent);
+    }
 
-	protected final void showInPlayStore(NativeAd ad) {
-		if (backgroundRedirectEnabled) {
-			PubNative.showInPlayStoreViaDialog(act, ad);
-		} else {
-			PubNative.showInPlayStoreViaBrowser(act, ad);
-		}
-		notifyOnTapped(getType(), ad);
-	}
+    //
+    private static boolean                                                 callingActivityIsFullScreen;
+    private static boolean                                                 showCalled;
+    //
+    private static Context                                                 ctx;
+    private static final WeakHashMap<PubNativeInterstitialsListener, Void> listeners = new WeakHashMap<PubNativeInterstitialsListener, Void>();
 
-	//
+    static void onException(Exception e)
+    {
+        notifyOnError(e);
+        if (showCalled)
+        {
+            showCalled = false;
+            Intent intent = PubNativeInterstitialsActivity.getFinishIntent(ctx, callingActivityIsFullScreen);
+            ctx.startActivity(intent);
+        }
+    }
 
-	public static void init(Context ctx, String appKey) {
-		AbstractDelegate.ctx = ctx.getApplicationContext();
-		InMem.appKey = appKey;
-	}
+    //
+    private static void notifyOnClosed(PubNativeInterstitialsType type)
+    {
+        for (PubNativeInterstitialsListener l : listeners.keySet())
+        {
+            l.onClosed(type);
+        }
+    }
 
-	public static void addListener(PubNativeInterstitialsListener listener) {
-		listeners.put(listener, null);
-	}
+    private static void notifyOnTapped(PubNativeInterstitialsType type, NativeAd ad)
+    {
+        for (PubNativeInterstitialsListener l : listeners.keySet())
+        {
+            l.onTapped(ad);
+        }
+    }
 
-	public static void removeListener(PubNativeInterstitialsListener listener) {
-		listeners.remove(listener);
-	}
+    private static void notifyOnShown(PubNativeInterstitialsType type)
+    {
+        for (PubNativeInterstitialsListener l : listeners.keySet())
+        {
+            l.onShown(type);
+        }
+    }
 
-	//
-
-	public static void show(Activity act, PubNativeInterstitialsType type,
-			int adCount) {
-		callingActivityIsFullScreen = ScreenUtil.isFullScreen(act);
-		showCalled = true;
-		Intent intent = PubNativeInterstitialsActivity.getShowPromosIntent(ctx,
-				callingActivityIsFullScreen, type, adCount);
-		ctx.startActivity(intent);
-	}
-
-	//
-
-	private static boolean callingActivityIsFullScreen;
-
-	private static boolean showCalled;
-
-	//
-
-	private static Context ctx;
-
-	private static final WeakHashMap<PubNativeInterstitialsListener, Void> listeners = new WeakHashMap<PubNativeInterstitialsListener, Void>();
-
-	static void onException(Exception e) {
-		notifyOnError(e);
-		if (showCalled) {
-			showCalled = false;
-			Intent intent = PubNativeInterstitialsActivity.getFinishIntent(ctx,
-					callingActivityIsFullScreen);
-			ctx.startActivity(intent);
-		}
-	}
-
-	//
-
-	private static void notifyOnClosed(PubNativeInterstitialsType type) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onClosed(type);
-		}
-	}
-
-	private static void notifyOnTapped(PubNativeInterstitialsType type,
-			NativeAd ad) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onTapped(ad);
-		}
-	}
-
-	private static void notifyOnShown(PubNativeInterstitialsType type) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onShown(type);
-		}
-	}
-
-	public static void notifyOnError(Exception e) {
-		for (PubNativeInterstitialsListener l : listeners.keySet()) {
-			l.onError(e);
-		}
-	}
-
+    public static void notifyOnError(Exception e)
+    {
+        for (PubNativeInterstitialsListener l : listeners.keySet())
+        {
+            l.onError(e);
+        }
+    }
 }

@@ -37,34 +37,34 @@ import org.json.JSONObject;
 
 import android.content.Context;
 
-public class GetAdsTask<T extends Ad> extends SimpleAsyncTask<ArrayList<T>> {
+public class GetAdsTask<T extends Ad> extends SimpleAsyncTask<ArrayList<T>>
+{
+    private final AdRequest                    adRequest;
+    private final JSONSerializer<? extends Ad> serializer;
 
-	private final AdRequest adRequest;
-	private final JSONSerializer<? extends Ad> serializer;
+    public GetAdsTask(Context ctx, AdRequest adRequest, AsyncTaskResultListener<ArrayList<T>> resultListener)
+    {
+        super(ctx, resultListener);
+        this.adRequest = adRequest;
+        Class<? extends Ad> cls;
+        switch (adRequest.getAdFormat())
+        {
+        case IMAGE:
+            cls = ImageAd.class;
+        break;
+        default:
+            cls = NativeAd.class;
+        break;
+        }
+        serializer = new JSONSerializer<>(cls, ctx);
+    }
 
-	public GetAdsTask(Context ctx, AdRequest adRequest,
-			AsyncTaskResultListener<ArrayList<T>> resultListener) {
-		super(ctx, resultListener);
-		this.adRequest = adRequest;
-		Class<? extends Ad> cls;
-		switch (adRequest.getAdFormat()) {
-		case IMAGE:
-			cls = ImageAd.class;
-			break;
-		default:
-			cls = NativeAd.class;
-			break;
-		}
-		serializer = new JSONSerializer<>(cls, ctx);
-	}
-
-	@Override
-	protected ArrayList<T> onExecute() throws Exception {
-		JSONObject obj = new GetAdsJSONTask(getContext(), adRequest, null)
-				.onExecute();
-		JSONArray arr = obj.getJSONArray(PubNativeContract.Response.ADS);
-		ArrayList<T> list = (ArrayList<T>) serializer.deserializeAll(arr);
-		return list;
-	}
-
+    @Override
+    protected ArrayList<T> onExecute() throws Exception
+    {
+        JSONObject obj = new GetAdsJSONTask(getContext(), adRequest, null).onExecute();
+        JSONArray arr = obj.getJSONArray(PubNativeContract.Response.ADS);
+        ArrayList<T> list = (ArrayList<T>) serializer.deserializeAll(arr);
+        return list;
+    }
 }

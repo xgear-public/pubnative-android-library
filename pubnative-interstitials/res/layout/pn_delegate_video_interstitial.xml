@@ -43,9 +43,4 @@
         android:textAppearance="@android:style/TextAppearance.Medium"
         android:textStyle="bold" />
 
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        layout="@layout/pn_view_activity_overlay" />
-
 </RelativeLayout>

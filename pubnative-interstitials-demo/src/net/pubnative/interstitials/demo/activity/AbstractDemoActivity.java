@@ -17,82 +17,89 @@ import android.content.Intent;
 import android.os.Bundle;
 
 public abstract class AbstractDemoActivity extends Activity implements
-		PubNativeListener {
+        PubNativeListener
+{
+    public static Intent getIntent(Context ctx, Class<? extends AbstractDemoActivity> cls, int adCount)
+    {
+        Intent in = new Intent(ctx, cls);
+        in.putExtra(COUNT, adCount);
+        return in;
+    }
 
-	public static Intent getIntent(Context ctx,
-			Class<? extends AbstractDemoActivity> cls, int adCount) {
-		Intent in = new Intent(ctx, cls);
-		in.putExtra(COUNT, adCount);
-		return in;
-	}
+    static final String COUNT = "count";
+    @InjectBundleExtra(key = COUNT)
+    protected int       adCount;
 
-	static final String COUNT = "count";
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        PubNative.setListener(this);
+    }
 
-	@InjectBundleExtra(key = COUNT)
-	protected int adCount;
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        PubNative.onPause();
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		PubNative.setListener(this);
-	}
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        PubNative.onResume();
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		PubNative.onPause();
-	}
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        PubNative.setImageReshaper(null);
+        PubNative.onDestroy();
+    }
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		PubNative.onResume();
-	}
+    //
+    protected final void show()
+    {
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, getAdFormat());
+        req.fillInDefaults(this);
+        req.setAdCount(adCount);
+        PubNative.showAd(req, getAdHolders());
+    }
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		PubNative.setImageReshaper(null);
-		PubNative.onDestroy();
-	}
+    protected AdFormat getAdFormat()
+    {
+        return AdFormat.NATIVE;
+    }
 
-	//
+    protected abstract AdHolder<?>[] getAdHolders();
 
-	protected final void show() {
-		AdRequest req = new AdRequest(Contract.APP_TOKEN, getAdFormat());
-		req.fillInDefaults(this);
-		req.setAdCount(adCount);
-		PubNative.showAd(req, getAdHolders());
-	}
+    //
+    public static boolean backgroundRedirectEnabled = true;
 
-	protected AdFormat getAdFormat() {
-		return AdFormat.NATIVE;
-	}
+    protected final void showInPlayStore(NativeAd ad)
+    {
+        if (backgroundRedirectEnabled)
+        {
+            PubNative.showInPlayStoreViaDialog(this, ad);
+        }
+        else
+        {
+            PubNative.showInPlayStoreViaBrowser(this, ad);
+        }
+    }
 
-	protected abstract AdHolder<?>[] getAdHolders();
+    //
+    @Override
+    public void onLoaded()
+    {
+        L.i("Loaded.");
+    }
 
-	//
-
-	public static boolean backgroundRedirectEnabled = true;
-
-	protected final void showInPlayStore(NativeAd ad) {
-		if (backgroundRedirectEnabled) {
-			PubNative.showInPlayStoreViaDialog(this, ad);
-		} else {
-			PubNative.showInPlayStoreViaBrowser(this, ad);
-		}
-	}
-
-	//
-
-	@Override
-	public void onLoaded() {
-		L.i("Loaded.");
-	}
-
-	@Override
-	public void onError(Exception ex) {
-		L.e(ex);
-	}
-
+    @Override
+    public void onError(Exception ex)
+    {
+        L.e(ex);
+    }
 }

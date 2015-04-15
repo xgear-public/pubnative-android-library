@@ -25,17 +25,18 @@ import net.pubnative.library.model.AdFormat;
 import net.pubnative.library.model.response.ImageAd;
 import android.view.View;
 
-public class ImageAdHolder extends AdHolder<ImageAd> {
+public class ImageAdHolder extends AdHolder<ImageAd>
+{
+    public ImageAdHolder(View view)
+    {
+        super(view);
+    }
 
-	public ImageAdHolder(View view) {
-		super(view);
-	}
+    public int imageViewId;
 
-	public int imageViewId;
-
-	@Override
-	public AdFormat getFormat() {
-		return AdFormat.IMAGE;
-	}
-
+    @Override
+    public AdFormat getFormat()
+    {
+        return AdFormat.IMAGE;
+    }
 }

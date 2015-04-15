@@ -27,53 +27,63 @@ import net.pubnative.interstitials.api.PubNativeInterstitialsType;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import android.view.View;
 
-public class InterstitialDelegate extends AbstractDelegate {
+public class InterstitialDelegate extends AbstractDelegate
+{
+    private NativeAdHolder holder;
 
-	private NativeAdHolder holder;
+    public InterstitialDelegate(PubNativeInterstitialsActivity act)
+    {
+        super(act, 1);
+    }
 
-	public InterstitialDelegate(PubNativeInterstitialsActivity act) {
-		super(act, 1);
-	}
+    @Override
+    public PubNativeInterstitialsType getType()
+    {
+        return PubNativeInterstitialsType.INTERSTITIAL;
+    }
 
-	@Override
-	public PubNativeInterstitialsType getType() {
-		return PubNativeInterstitialsType.INTERSTITIAL;
-	}
+    @Override
+    protected int getContentLayoutId()
+    {
+        return R.layout.pn_delegate_interstitial;
+    }
 
-	@Override
-	protected int getContentLayoutId() {
-		return R.layout.pn_delegate_interstitial;
-	}
+    @Override
+    public NativeAdHolder[] getAdHolders()
+    {
+        return new NativeAdHolder[]
+        { holder };
+    }
 
-	@Override
-	public NativeAdHolder[] getAdHolders() {
-		return new NativeAdHolder[] { holder };
-	}
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        holderView.setOnClickListener(this);
+        createHolders();
+    }
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		holderView.setOnClickListener(this);
-		createHolders();
-	}
+    private void createHolders()
+    {
+        holder = new NativeAdHolder(holderView);
+        holder.iconViewId = R.id.view_icon;
+        holder.bannerViewId = R.id.view_game_image;
+        holder.titleViewId = R.id.view_title;
+        holder.ratingViewId = R.id.view_rating;
+        holder.descriptionViewId = R.id.view_description;
+        holder.downloadViewId = R.id.btn_download;
+    }
 
-	private void createHolders() {
-		holder = new NativeAdHolder(holderView);
-		holder.iconViewId = R.id.view_icon;
-		holder.bannerViewId = R.id.view_game_image;
-		holder.titleViewId = R.id.view_title;
-		holder.ratingViewId = R.id.view_rating;
-		holder.descriptionViewId = R.id.view_description;
-		holder.downloadViewId = R.id.btn_download;
-	}
-
-	@Override
-	public void onClick(View v) {
-		if (v == holderView) {
-			showInPlayStore(holder.ad);
-		} else {
-			super.onClick(v);
-		}
-	}
-
+    @Override
+    public void onClick(View v)
+    {
+        if (v == holderView)
+        {
+            showInPlayStore(holder.ad);
+        }
+        else
+        {
+            super.onClick(v);
+        }
+    }
 }

@@ -30,48 +30,54 @@ import android.os.Build;
 import android.view.Display;
 import android.view.WindowManager;
 
-public class ScreenUtil {
+public class ScreenUtil
+{
+    public static int getScreenDensityDpi(Context ctx)
+    {
+        return ctx.getResources().getDisplayMetrics().densityDpi;
+    }
 
-	public static int getScreenDensityDpi(Context ctx) {
-		return ctx.getResources().getDisplayMetrics().densityDpi;
-	}
+    public static int getScreenWidth(Context ctx)
+    {
+        return ctx.getResources().getDisplayMetrics().widthPixels;
+    }
 
-	public static int getScreenWidth(Context ctx) {
-		return ctx.getResources().getDisplayMetrics().widthPixels;
-	}
+    public static int getScreenHeight(Context ctx)
+    {
+        return ctx.getResources().getDisplayMetrics().heightPixels;
+    }
 
-	public static int getScreenHeight(Context ctx) {
-		return ctx.getResources().getDisplayMetrics().heightPixels;
-	}
+    @SuppressLint("NewApi")
+    public static Point getRealScreenSize(Context ctx)
+    {
+        WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+        Display d = wm.getDefaultDisplay();
+        Point p = new Point();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+        {
+            d.getRealSize(p);
+        }
+        else
+        {
+            p.x = getScreenWidth(ctx);
+            p.y = getScreenHeight(ctx);
+        }
+        return p;
+    }
 
-	@SuppressLint("NewApi")
-	public static Point getRealScreenSize(Context ctx) {
-		WindowManager wm = (WindowManager) ctx
-				.getSystemService(Context.WINDOW_SERVICE);
-		Display d = wm.getDefaultDisplay();
-		Point p = new Point();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-			d.getRealSize(p);
-		} else {
-			p.x = getScreenWidth(ctx);
-			p.y = getScreenHeight(ctx);
-		}
-		return p;
-	}
+    //
+    public static boolean isPortrait(Context ctx)
+    {
+        int orientation = ctx.getResources().getConfiguration().orientation;
+        return (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
 
-	//
+    public static boolean isFullScreen(Activity act)
+    {
+        int windowFlags = act.getWindow().getAttributes().flags;
+        return (windowFlags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+    }
 
-	public static boolean isPortrait(Context ctx) {
-		int orientation = ctx.getResources().getConfiguration().orientation;
-		return (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-	}
-
-	public static boolean isFullScreen(Activity act) {
-		int windowFlags = act.getWindow().getAttributes().flags;
-		return (windowFlags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-	}
-
-	private ScreenUtil() {
-	}
-
+    private ScreenUtil()
+    {}
 }

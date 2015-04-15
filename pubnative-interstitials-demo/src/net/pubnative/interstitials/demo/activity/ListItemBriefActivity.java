@@ -16,49 +16,53 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 public class ListItemBriefActivity extends AbstractDemoActivity implements
-		OnItemClickListener {
+        OnItemClickListener
+{
+    private ListView         listView;
+    private NativeAdHolder[] holders;
+    private FullAdapter      adapter;
 
-	private ListView listView;
+    @Override
+    public void onPreInject()
+    {
+        setContentView(R.layout.activity_list);
+    }
 
-	private NativeAdHolder[] holders;
-	private FullAdapter adapter;
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        listView = ViewUtils.findViewById(this, R.id.view_list);
+        adapter = createAdapter(this);
+        listView.setOnItemClickListener(this);
+        listView.setAdapter(adapter);
+        createHolders();
+        show();
+    }
 
-	@Override
-	public void onPreInject() {
-		setContentView(R.layout.activity_list);
-	}
+    private void createHolders()
+    {
+        holders = new NativeAdHolder[adCount];
+        for (int i = 0; i < adCount; i++)
+        {
+            holders[i] = adapter.makeAndAddHolder();
+        }
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		listView = ViewUtils.findViewById(this, R.id.view_list);
-		adapter = createAdapter(this);
-		listView.setOnItemClickListener(this);
-		listView.setAdapter(adapter);
-		createHolders();
-		show();
-	}
+    @Override
+    protected AdHolder<?>[] getAdHolders()
+    {
+        return holders;
+    }
 
-	private void createHolders() {
-		holders = new NativeAdHolder[adCount];
-		for (int i = 0; i < adCount; i++) {
-			holders[i] = adapter.makeAndAddHolder();
-		}
-	}
+    protected FullAdapter createAdapter(Context ctx)
+    {
+        return new BriefAdapter(ctx);
+    }
 
-	@Override
-	protected AdHolder<?>[] getAdHolders() {
-		return holders;
-	}
-
-	protected FullAdapter createAdapter(Context ctx) {
-		return new BriefAdapter(ctx);
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position,
-			long id) {
-		showInPlayStore(adapter.getItem(position).ad);
-	}
-
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        showInPlayStore(adapter.getItem(position).ad);
+    }
 }

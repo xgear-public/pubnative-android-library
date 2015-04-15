@@ -21,6 +21,7 @@
  */
 package net.pubnative.library.model;
 
-public enum AdFormat {
-	IMAGE, NATIVE, VIDEO
+public enum AdFormat
+{
+    IMAGE, NATIVE, VIDEO
 }

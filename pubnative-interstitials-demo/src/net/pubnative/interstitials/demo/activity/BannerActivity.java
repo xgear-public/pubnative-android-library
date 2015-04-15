@@ -40,89 +40,93 @@ import android.view.View.OnClickListener;
 import android.widget.RatingBar;
 
 public class BannerActivity extends AbstractDemoActivity implements
-		OnClickListener {
+        OnClickListener
+{
+    @InjectView(id = R.id.banner1, click = true)
+    private View           banner1View;
+    @InjectView(id = R.id.banner2, click = true)
+    private View           banner2View;
+    private NativeAdHolder banner1Holder;
+    private NativeAdHolder banner2Holder;
 
-	@InjectView(id = R.id.banner1, click = true)
-	private View banner1View;
-	@InjectView(id = R.id.banner2, click = true)
-	private View banner2View;
+    @Override
+    public void onPreInject()
+    {
+        setContentView(R.layout.activity_banner);
+    }
 
-	private NativeAdHolder banner1Holder;
-	private NativeAdHolder banner2Holder;
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        changeStarsColor();
+        makeHolders();
+        initPubNative();
+        showBanner1();
+        showBanner2();
+    }
 
-	@Override
-	public void onPreInject() {
-		setContentView(R.layout.activity_banner);
-	}
+    private void changeStarsColor()
+    {
+        RatingBar ratingBar = (RatingBar) findViewById(R.id.view_banner_rating);
+        LayerDrawable stars = (LayerDrawable) ratingBar.getProgressDrawable();
+        stars.getDrawable(1).setColorFilter(getResources().getColor(R.color.grey), PorterDuff.Mode.SRC_ATOP);
+        stars.getDrawable(2).setColorFilter(getResources().getColor(R.color.orange), PorterDuff.Mode.SRC_ATOP);
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		changeStarsColor();
-		makeHolders();
-		initPubNative();
-		showBanner1();
-		showBanner2();
-	}
+    private void initPubNative()
+    {
+        int iconSidePx = getResources().getDimensionPixelSize(R.dimen.icon_size);
+        int radiusPx = getResources().getDimensionPixelSize(R.dimen.icon_corner_radius);
+        PubNative.setImageReshaper(new ResizingRoundingReshaper(this, iconSidePx, radiusPx));
+    }
 
-	private void changeStarsColor() {
-		RatingBar ratingBar = (RatingBar) findViewById(R.id.view_banner_rating);
-		LayerDrawable stars = (LayerDrawable) ratingBar.getProgressDrawable();
-		stars.getDrawable(1)
-				.setColorFilter(getResources().getColor(R.color.grey),
-						PorterDuff.Mode.SRC_ATOP);
-		stars.getDrawable(2).setColorFilter(
-				getResources().getColor(R.color.orange),
-				PorterDuff.Mode.SRC_ATOP);
-	}
+    private void makeHolders()
+    {
+        banner1Holder = new NativeAdHolder(banner1View);
+        banner1Holder.iconViewId = R.id.view_banner_icon;
+        banner1Holder.titleViewId = R.id.view_banner_title;
+        banner1Holder.ratingViewId = R.id.view_banner_rating;
+        banner1Holder.downloadViewId = R.id.view_install;
+        banner2Holder = new NativeAdHolder(banner2View);
+        banner2Holder.iconViewId = R.id.view_banner_icon;
+    }
 
-	private void initPubNative() {
-		int iconSidePx = getResources()
-				.getDimensionPixelSize(R.dimen.icon_size);
-		int radiusPx = getResources().getDimensionPixelSize(
-				R.dimen.icon_corner_radius);
-		PubNative.setImageReshaper(new ResizingRoundingReshaper(this,
-				iconSidePx, radiusPx));
-	}
+    private void showBanner1()
+    {
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        req.fillInDefaults(this);
+        req.setIconSize(300, 300);
+        PubNative.showAd(req, banner1Holder);
+    }
 
-	private void makeHolders() {
-		banner1Holder = new NativeAdHolder(banner1View);
-		banner1Holder.iconViewId = R.id.view_banner_icon;
-		banner1Holder.titleViewId = R.id.view_banner_title;
-		banner1Holder.ratingViewId = R.id.view_banner_rating;
-		banner1Holder.downloadViewId = R.id.view_install;
-		banner2Holder = new NativeAdHolder(banner2View);
-		banner2Holder.iconViewId = R.id.view_banner_icon;
-	}
+    private void showBanner2()
+    {
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        req.fillInDefaults(this);
+        req.setIconSize(300, 300);
+        PubNative.showAd(req, banner2Holder);
+    }
 
-	private void showBanner1() {
-		AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
-		req.fillInDefaults(this);
-		req.setIconSize(300, 300);
-		PubNative.showAd(req, banner1Holder);
-	}
+    @Override
+    public void onClick(View view)
+    {
+        NativeAd ad = null;
+        if (view == banner1View)
+        {
+            ad = banner1Holder.ad;
+        }
+        else
+            if (view == banner2View)
+            {
+                ad = banner2Holder.ad;
+            }
+        PubNative.showInPlayStoreViaDialog(this, ad);
+    }
 
-	private void showBanner2() {
-		AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
-		req.fillInDefaults(this);
-		req.setIconSize(300, 300);
-		PubNative.showAd(req, banner2Holder);
-	}
-
-	@Override
-	public void onClick(View view) {
-		NativeAd ad = null;
-		if (view == banner1View) {
-			ad = banner1Holder.ad;
-		} else if (view == banner2View) {
-			ad = banner2Holder.ad;
-		}
-		PubNative.showInPlayStoreViaDialog(this, ad);
-	}
-
-	@Override
-	protected NativeAdHolder[] getAdHolders() {
-		return null;
-	}
-
+    @Override
+    protected NativeAdHolder[] getAdHolders()
+    {
+        return null;
+    }
 }

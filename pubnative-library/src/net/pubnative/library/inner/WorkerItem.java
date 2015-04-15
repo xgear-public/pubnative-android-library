@@ -26,58 +26,65 @@ import net.pubnative.library.model.holder.VideoAdHolder;
 import android.content.Context;
 import android.media.MediaPlayer;
 
-public class WorkerItem<T extends AdHolder<?>> {
+public class WorkerItem<T extends AdHolder<?>>
+{
+    public final T     holder;
+    public long        firstAppeared = -1;
+    public boolean     confirmed;
+    //
+    public MediaPlayer mp;
+    public boolean     preparing;
+    public boolean     prepared;
+    public boolean     played;
+    public boolean     fullScreen;
 
-	public final T holder;
+    WorkerItem(T holder)
+    {
+        this.holder = holder;
+    }
 
-	public long firstAppeared = -1;
-	public boolean confirmed;
-	//
-	public MediaPlayer mp;
-	public boolean preparing;
-	public boolean prepared;
-	public boolean played;
-	public boolean fullScreen;
+    boolean isPlaying()
+    {
+        return (mp != null && mp.isPlaying());
+    }
 
-	WorkerItem(T holder) {
-		this.holder = holder;
-	}
+    public void setMuted(boolean muted)
+    {
+        this.muted = muted;
+        float val = muted ? 0 : 1;
+        mp.setVolume(val, val);
+    }
 
-	boolean isPlaying() {
-		return (mp != null && mp.isPlaying());
-	}
+    public boolean isMuted()
+    {
+        return muted;
+    }
 
-	public void setMuted(boolean muted) {
-		this.muted = muted;
-		float val = muted ? 0 : 1;
-		mp.setVolume(val, val);
-	}
+    private boolean muted = true; ;
 
-	public boolean isMuted() {
-		return muted;
-	}
+    boolean inFeedVideo()
+    {
+        if (holder instanceof VideoAdHolder)
+        {
+            return (((VideoAdHolder) holder).playButtonViewId) <= 0;
+        }
+        return false;
+    }
 
-	private boolean muted = true;;
+    public Context getContext()
+    {
+        return holder.getView().getContext();
+    }
 
-	boolean inFeedVideo() {
-		if (holder instanceof VideoAdHolder) {
-			return (((VideoAdHolder) holder).playButtonViewId) <= 0;
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object o)
+    {
+        return holder.equals(o);
+    }
 
-	public Context getContext() {
-		return holder.getView().getContext();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		return holder.equals(o);
-	}
-
-	@Override
-	public int hashCode() {
-		return holder.hashCode();
-	}
-
+    @Override
+    public int hashCode()
+    {
+        return holder.hashCode();
+    }
 }
