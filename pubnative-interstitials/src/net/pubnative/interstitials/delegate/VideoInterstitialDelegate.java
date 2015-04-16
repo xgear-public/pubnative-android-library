@@ -25,6 +25,7 @@ import net.pubnative.interstitials.PubNativeInterstitialsActivity;
 import net.pubnative.interstitials.R;
 import net.pubnative.interstitials.api.PubNativeInterstitialsType;
 import net.pubnative.interstitials.widget.InterstitialView;
+import net.pubnative.interstitials.widget.VideoInterstitialView;
 import net.pubnative.library.inner.PubNativeWorker;
 import net.pubnative.library.model.AdFormat;
 import net.pubnative.library.model.holder.NativeAdHolder;
@@ -37,9 +38,10 @@ import android.view.View;
 
 public class VideoInterstitialDelegate extends AbstractDelegate
 {
-    private VideoAdHolder     holder;
-    private InterstitialView  interstitialView;
-    private BroadcastReceiver interstitialBroadcastReceiver;
+    private VideoAdHolder         holder;
+    private InterstitialView      interstitialView;
+    private BroadcastReceiver     interstitialBroadcastReceiver;
+    private VideoInterstitialView videoInterstitialView;
 
     public VideoInterstitialDelegate(PubNativeInterstitialsActivity act)
     {
@@ -70,6 +72,7 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     {
         super.onCreate();
         holderView.setOnClickListener(this);
+        videoInterstitialView = (VideoInterstitialView) holderView.findViewById(R.id.view_holder);
         interstitialBroadcastReceiver = new BroadcastReceiver()
         {
             @Override
@@ -86,6 +89,7 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     {
         super.onResume();
         holderView.getContext().registerReceiver(interstitialBroadcastReceiver, new IntentFilter(PubNativeWorker.broadcastInterstitialDismissKey));
+        videoInterstitialView.onResume();
     }
 
     @Override
@@ -93,6 +97,7 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     {
         super.onStop();
         holderView.getContext().unregisterReceiver(interstitialBroadcastReceiver);
+        videoInterstitialView.onStop();
     }
 
     private void createHolders()
