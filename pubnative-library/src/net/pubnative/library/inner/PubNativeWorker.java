@@ -85,6 +85,7 @@ public class PubNativeWorker
     private static int                          imageCounter;
     private static boolean                      loaded;
     public static String                        broadcastInterstitialDismissKey = "popup_vindow_dismiss";
+    public static String                        broadcastOnVideoPreparedKey     = "on_video_prepared";
 
     public static void showAd(String appToken, AdHolder<?>... holders)
     {
@@ -392,6 +393,9 @@ public class PubNativeWorker
             public void onPrepared(MediaPlayer mp)
             {
                 ViewUtil.setSize(videoView, bannerView.getWidth(), bannerView.getHeight());
+                //
+                Intent onVideoPreparedIntent = new Intent(PubNativeWorker.broadcastOnVideoPreparedKey);
+                wi.getContext().sendBroadcast(onVideoPreparedIntent);
                 //
                 wi.preparing = false;
                 wi.prepared = true;
