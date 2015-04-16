@@ -614,7 +614,7 @@ public class PubNativeWorker
         {
             try
             {
-                ViewPopup popup = new ViewPopup(popupView);
+                ViewPopup popup = new ViewPopup(popupView, false);
                 popup.setOnDismissListener(new PopupWindow.OnDismissListener()
                 {
                     @Override
