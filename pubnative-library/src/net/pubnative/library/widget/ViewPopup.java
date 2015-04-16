@@ -37,9 +37,27 @@ public class ViewPopup extends PopupWindow implements View.OnClickListener
     public ViewPopup(View view)
     {
         super(wrap(view), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, true);
+        init(true);
+    }
+
+    public ViewPopup(View view, boolean showCloseButton)
+    {
+        super(wrap(view), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, true);
+        init(showCloseButton);
+    }
+
+    private void init(boolean showCloseButton)
+    {
         setBackgroundDrawable(new ColorDrawable());
         closeView = getContentView().findViewById(R.id.view_close);
-        closeView.setOnClickListener(this);
+        if (showCloseButton)
+        {
+            closeView.setOnClickListener(this);
+        }
+        else
+        {
+            closeView.setVisibility(View.INVISIBLE);
+        }
     }
 
     public void show(View parent)
