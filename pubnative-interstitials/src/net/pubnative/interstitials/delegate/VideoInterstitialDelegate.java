@@ -128,7 +128,7 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     @Override
     public void onClick(View v)
     {
-        if (v == holderView || v.getId() == R.id.view_banner || v.getId() == R.id.view_video)
+        if (v == holderView || v == interstitialView || v.getId() == R.id.view_banner || v.getId() == R.id.view_video)
         {
             showInPlayStore(holder.ad);
         }
