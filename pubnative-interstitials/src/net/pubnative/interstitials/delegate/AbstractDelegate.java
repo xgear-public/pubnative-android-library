@@ -33,7 +33,7 @@ import net.pubnative.interstitials.persist.InMem;
 import net.pubnative.interstitials.util.ScreenUtil;
 import net.pubnative.library.PubNative;
 import net.pubnative.library.inner.PubNativeWorker;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.AdHolder;
 import net.pubnative.library.model.request.AdRequest;
 import net.pubnative.library.model.response.NativeAd;
@@ -97,9 +97,9 @@ public abstract class AbstractDelegate implements OnClickListener
         return req;
     }
 
-    protected AdFormat getAdFormat()
+    protected APIEndpoint getAdFormat()
     {
-        return AdFormat.NATIVE;
+        return APIEndpoint.NATIVE;
     }
 
     public abstract AdHolder<?>[] getAdHolders();

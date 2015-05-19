@@ -44,14 +44,9 @@ public abstract class Ad extends Model implements
             return ((NativeAd) this).storeId;
         }
         else
-            if (this instanceof ImageAd)
-            {
-                return ((ImageAd) this).storeId;
-            }
-            else
-            {
-                return null;
-            }
+        {
+            return null;
+        }
     }
 
     public String getConfirmationUrl()

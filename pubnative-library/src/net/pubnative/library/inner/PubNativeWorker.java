@@ -34,7 +34,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import net.pubnative.library.PubNativeListener;
 import net.pubnative.library.model.holder.AdHolder;
-import net.pubnative.library.model.holder.ImageAdHolder;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.holder.VideoAdHolder;
 import net.pubnative.library.model.request.AdRequest;
@@ -196,40 +195,28 @@ public class PubNativeWorker
     private static void processAd(AdHolder<?> holder)
     {
         WorkerItem<?> wi = new WorkerItem(holder);
-        if (holder instanceof ImageAdHolder)
+        if (holder instanceof NativeAdHolder)
         {
-            processImageAd((ImageAdHolder) holder);
+            processNativeAd((NativeAdHolder) holder);
         }
         else
-            if (holder instanceof NativeAdHolder)
+        {
+            if (holder instanceof VideoAdHolder)
             {
-                processNativeAd((NativeAdHolder) holder);
+                processVideoAd((WorkerItem<VideoAdHolder>) wi);
+                VideoAdHolder h = (VideoAdHolder) holder;
+                if (h.backViewHolder != null)
+                {
+                    h.backViewHolder.ad = (NativeAd) holder.ad;
+                    processNativeAd(h.backViewHolder);
+                }
             }
             else
-                if (holder instanceof VideoAdHolder)
-                {
-                    processVideoAd((WorkerItem<VideoAdHolder>) wi);
-                    VideoAdHolder h = (VideoAdHolder) holder;
-                    if (h.backViewHolder != null)
-                    {
-                        h.backViewHolder.ad = (NativeAd) holder.ad;
-                        processNativeAd(h.backViewHolder);
-                    }
-                }
-                else
-                {
-                    throw new IllegalArgumentException();
-                }
-        workerItems.add(wi);
-    }
-
-    private static void processImageAd(ImageAdHolder holder)
-    {
-        ImageView iv = holder.getView(holder.imageViewId);
-        if (iv != null)
-        {
-            imageFetcher.attachImage(holder.ad.imageUrl, iv, reshaper, 0, ifListener);
+            {
+                throw new IllegalArgumentException();
+            }
         }
+        workerItems.add(wi);
     }
 
     private static void processNativeAd(NativeAdHolder holder)

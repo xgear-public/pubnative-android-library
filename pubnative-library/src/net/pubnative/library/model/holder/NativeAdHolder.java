@@ -21,7 +21,7 @@
  */
 package net.pubnative.library.model.holder;
 
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.response.NativeAd;
 import android.view.View;
 
@@ -43,8 +43,8 @@ public class NativeAdHolder extends AdHolder<NativeAd>
     public int downloadViewId;
 
     @Override
-    public AdFormat getFormat()
+    public APIEndpoint getFormat()
     {
-        return AdFormat.NATIVE;
+        return APIEndpoint.NATIVE;
     }
 }

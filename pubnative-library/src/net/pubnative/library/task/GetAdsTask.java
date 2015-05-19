@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import net.pubnative.library.PubNativeContract;
 import net.pubnative.library.model.request.AdRequest;
 import net.pubnative.library.model.response.Ad;
-import net.pubnative.library.model.response.ImageAd;
 import net.pubnative.library.model.response.NativeAd;
 
 import org.droidparts.concurrent.task.AsyncTaskResultListener;
@@ -49,9 +48,6 @@ public class GetAdsTask<T extends Ad> extends SimpleAsyncTask<ArrayList<T>>
         Class<? extends Ad> cls;
         switch (adRequest.getAdFormat())
         {
-        case IMAGE:
-            cls = ImageAd.class;
-        break;
         default:
             cls = NativeAd.class;
         break;

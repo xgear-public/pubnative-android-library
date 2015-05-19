@@ -21,7 +21,7 @@
  */
 package net.pubnative.library.model.holder;
 
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.response.Ad;
 
 import org.droidparts.util.L;
@@ -61,5 +61,5 @@ public abstract class AdHolder<T extends Ad>
         return null;
     }
 
-    public abstract AdFormat getFormat();
+    public abstract APIEndpoint getFormat();
 }

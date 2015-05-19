@@ -19,22 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.pubnative.library.model.response;
+package net.pubnative.library.model;
 
-import net.pubnative.library.PubNativeContract;
-
-import org.droidparts.annotation.serialize.JSON;
-
-public class ImageAd extends Ad implements
-        PubNativeContract.Response.ImageFormat
+public enum APIEndpoint
 {
-    private static final long serialVersionUID = 1L;
-    @JSON(key = IMAGE_URL)
-    public String             imageUrl;
-    @JSON(key = STORE_ID, optional = true)
-    public String             storeId;
-    @JSON(key = WIDTH)
-    public int                width;
-    @JSON(key = HEIGHT)
-    public int                height;
+    NATIVE, VIDEO
 }

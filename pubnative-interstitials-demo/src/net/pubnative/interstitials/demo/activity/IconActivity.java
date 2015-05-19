@@ -24,7 +24,7 @@ package net.pubnative.interstitials.demo.activity;
 import net.pubnative.interstitials.demo.Contract;
 import net.pubnative.interstitials.demo.R;
 import net.pubnative.library.PubNative;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.request.AdRequest;
 
@@ -64,7 +64,7 @@ public class IconActivity extends AbstractDemoActivity implements
 
     private void showIcon()
     {
-        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, APIEndpoint.NATIVE);
         req.fillInDefaults(this);
         req.setIconSize(300, 300);
         PubNative.showAd(req, iconHolder);

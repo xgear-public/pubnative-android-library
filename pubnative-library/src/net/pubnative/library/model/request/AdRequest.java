@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 import net.pubnative.library.PubNativeContract;
 import net.pubnative.library.PubNativeContract.RequestInfo;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.util.KeyUtil;
 import android.content.Context;
 import android.net.Uri;
@@ -35,10 +35,10 @@ public class AdRequest implements Serializable
 {
     private static final long             serialVersionUID = 1L;
     private final String                  appToken;
-    private final AdFormat                format;
+    private final APIEndpoint             format;
     private final HashMap<String, String> params           = new HashMap<String, String>();
 
-    public AdRequest(String appToken, AdFormat format)
+    public AdRequest(String appToken, APIEndpoint format)
     {
         this.appToken = appToken;
         this.format = format;
@@ -77,9 +77,6 @@ public class AdRequest implements Serializable
         Uri.Builder bldr = Uri.parse(PubNativeContract.BASE_URL).buildUpon();
         switch (format)
         {
-        case IMAGE:
-            bldr.appendPath(PubNativeContract.IMAGE);
-        break;
         case NATIVE:
             bldr.appendPath(PubNativeContract.NATIVE);
         break;
@@ -98,7 +95,7 @@ public class AdRequest implements Serializable
         return bldr.build();
     }
 
-    public AdFormat getAdFormat()
+    public APIEndpoint getAdFormat()
     {
         return format;
     }

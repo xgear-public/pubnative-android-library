@@ -1,6 +1,6 @@
 package net.pubnative.interstitials.demo.activity;
 
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 
 import org.droidparts.util.ui.ViewUtils;
 
@@ -9,9 +9,9 @@ import android.view.View;
 public class InFeedVideoActivity extends VideoBannerActivity
 {
     @Override
-    protected AdFormat getAdFormat()
+    protected APIEndpoint getAdFormat()
     {
-        return AdFormat.VIDEO;
+        return APIEndpoint.VIDEO;
     }
 
     @Override
