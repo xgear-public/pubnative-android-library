@@ -16,6 +16,9 @@ import net.pubnative.interstitials.demo.misc.DialogFactory.SettingsDialogListene
 import net.pubnative.interstitials.persist.InMem;
 import net.pubnative.library.model.response.NativeAd;
 
+import net.pubnative.interstitials.demo.Contract;
+import net.pubnative.interstitials.demo.R;
+
 import org.droidparts.activity.legacy.Activity;
 import org.droidparts.util.L;
 
