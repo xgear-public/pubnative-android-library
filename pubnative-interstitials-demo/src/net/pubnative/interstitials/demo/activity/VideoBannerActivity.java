@@ -2,7 +2,7 @@ package net.pubnative.interstitials.demo.activity;
 
 import net.pubnative.interstitials.demo.R;
 import net.pubnative.interstitials.widget.InterstitialView;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.holder.VideoAdHolder;
 import android.view.LayoutInflater;
@@ -16,9 +16,9 @@ public class VideoBannerActivity extends AbstractSingleHolderListActivity<View> 
     private View            interstitialView;
 
     @Override
-    protected AdFormat getAdFormat()
+    protected APIEndpoint getAdFormat()
     {
-        return AdFormat.VIDEO;
+        return APIEndpoint.VIDEO;
     }
 
     @Override

@@ -3,7 +3,7 @@ package net.pubnative.interstitials.demo.activity;
 import net.pubnative.interstitials.demo.Contract;
 import net.pubnative.library.PubNative;
 import net.pubnative.library.PubNativeListener;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.AdHolder;
 import net.pubnative.library.model.request.AdRequest;
 import net.pubnative.library.model.response.NativeAd;
@@ -68,9 +68,9 @@ public abstract class AbstractDemoActivity extends Activity implements
         PubNative.showAd(req, getAdHolders());
     }
 
-    protected AdFormat getAdFormat()
+    protected APIEndpoint getAdFormat()
     {
-        return AdFormat.NATIVE;
+        return APIEndpoint.NATIVE;
     }
 
     protected abstract AdHolder<?>[] getAdHolders();

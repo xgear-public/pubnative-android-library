@@ -25,7 +25,7 @@ import net.pubnative.interstitials.demo.Contract;
 import net.pubnative.interstitials.demo.R;
 import net.pubnative.interstitials.demo.misc.ResizingRoundingReshaper;
 import net.pubnative.library.PubNative;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.request.AdRequest;
 import net.pubnative.library.model.response.NativeAd;
@@ -94,7 +94,7 @@ public class BannerActivity extends AbstractDemoActivity implements
 
     private void showBanner1()
     {
-        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, APIEndpoint.NATIVE);
         req.fillInDefaults(this);
         req.setIconSize(300, 300);
         PubNative.showAd(req, banner1Holder);
@@ -102,7 +102,7 @@ public class BannerActivity extends AbstractDemoActivity implements
 
     private void showBanner2()
     {
-        AdRequest req = new AdRequest(Contract.APP_TOKEN, AdFormat.NATIVE);
+        AdRequest req = new AdRequest(Contract.APP_TOKEN, APIEndpoint.NATIVE);
         req.fillInDefaults(this);
         req.setIconSize(300, 300);
         PubNative.showAd(req, banner2Holder);

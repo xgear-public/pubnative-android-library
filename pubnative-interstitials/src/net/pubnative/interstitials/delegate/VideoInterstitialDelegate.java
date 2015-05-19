@@ -27,7 +27,7 @@ import net.pubnative.interstitials.api.PubNativeInterstitialsType;
 import net.pubnative.interstitials.widget.InterstitialView;
 import net.pubnative.interstitials.widget.VideoInterstitialView;
 import net.pubnative.library.inner.PubNativeWorker;
-import net.pubnative.library.model.AdFormat;
+import net.pubnative.library.model.APIEndpoint;
 import net.pubnative.library.model.holder.NativeAdHolder;
 import net.pubnative.library.model.holder.VideoAdHolder;
 import android.content.BroadcastReceiver;
@@ -139,8 +139,8 @@ public class VideoInterstitialDelegate extends AbstractDelegate
     }
 
     @Override
-    protected AdFormat getAdFormat()
+    protected APIEndpoint getAdFormat()
     {
-        return AdFormat.VIDEO;
+        return APIEndpoint.VIDEO;
     }
 }
