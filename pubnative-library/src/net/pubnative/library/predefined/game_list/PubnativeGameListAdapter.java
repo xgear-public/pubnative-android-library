@@ -39,7 +39,7 @@ public class PubnativeGameListAdapter extends ArrayAdapter<NativeAdModel>
             renderer.ratingView = (RatingBar) result.findViewById(R.id.pn_game_list_item_rating);
             renderer.downloadView = (TextView) result.findViewById(R.id.pn_game_list_item_cta);
             renderer.render(model, null);
-            model.confirmImpressionAutomatically(this.getContext(), convertView);
+            model.confirmImpressionAutomatically(this.getContext(), result);
         }
         return result;
     }

@@ -50,7 +50,6 @@ public class TaskManager implements TaskItemListener
     {
         if (running)
         {
-            TaskManager.setRunning(false);
             TaskManager.getInstance().executorService = (ScheduledExecutorService) Executors.newSingleThreadScheduledExecutor();
             TaskManager.getInstance().executorService.scheduleAtFixedRate(looper, LOOPER_INTERVAL, LOOPER_INTERVAL, TimeUnit.MILLISECONDS);
         }

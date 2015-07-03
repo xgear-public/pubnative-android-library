@@ -21,61 +21,84 @@
  */
 package net.pubnative.library.managers.task;
 
-import org.droidparts.concurrent.task.SimpleAsyncTask;
-import org.droidparts.net.http.HTTPResponse;
-import org.droidparts.net.http.RESTClient2;
-
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
-public class InvokeLinkTask extends SimpleAsyncTask<HTTPResponse>
+public class InvokeLinkTask
 {
-    public interface InvokeLinkTaskListener
-    {
-        void onInvokeLinkTaskFinished(HTTPResponse response, InvokeLinkTask task);
-
-        void onInvokeLinkTaskFailed(Exception exception, InvokeLinkTask task);
-    }
-
-    private final RESTClient2      restClient;
-    public final String            link;
+    public String                  link;
+    public Context                 context;
     private InvokeLinkTaskListener listener;
 
-    public InvokeLinkTask(Context ctx, InvokeLinkTaskListener listener, String link)
+    public interface InvokeLinkTaskListener
     {
-        super(ctx, null);
-        restClient = new RESTClient2(ctx);
+        void onInvokeLinkTaskFinished(InvokeLinkTask task);
+    }
+
+    public InvokeLinkTask(Context context, InvokeLinkTaskListener listener, String link)
+    {
         this.link = link;
+        this.context = context;
         this.listener = listener;
     }
 
-    public Context getContext()
+    public void execute()
     {
-        return super.getContext();
+        new Handler(Looper.getMainLooper()).post(new MainThreadRunnable(this.context, this.listener, this.link, this));
     }
 
-    @Override
-    protected HTTPResponse onExecute() throws Exception
+    private class MainThreadRunnable implements Runnable
     {
-        return restClient.get(link);
-    }
+        InvokeLinkTask         task;
+        InvokeLinkTaskListener listener;
+        Context                context;
+        WebView                webView;
+        String                 link;
 
-    @Override
-    public void onPostExecuteSuccess(HTTPResponse response)
-    {
-        super.onPostExecuteSuccess(response);
-        if (this.listener != null)
+        public MainThreadRunnable(Context context, InvokeLinkTaskListener listener, String link, InvokeLinkTask task)
         {
-            this.listener.onInvokeLinkTaskFinished(response, this);
+            this.context = context;
+            this.task = task;
+            this.listener = listener;
+            this.link = link;
         }
-    }
 
-    @Override
-    public void onPostExecuteFailure(Exception exception)
-    {
-        super.onPostExecuteFailure(exception);
-        if (this.listener != null)
+        @Override
+        public void run()
         {
-            this.listener.onInvokeLinkTaskFailed(exception, this);
+            this.webView = makeWebView();
+            this.webView.loadUrl(this.link);
+            this.listener.onInvokeLinkTaskFinished(this.task);
+        }
+
+        private WebView makeWebView()
+        {
+            WebViewClient wvc = new WebViewClient()
+            {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url)
+                {
+                    return true;
+                }
+
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
+                {
+                    // Do nothing
+                }
+            };
+            WebView wv = new WebView(this.context);
+            wv.setWebChromeClient(new WebChromeClient());
+            wv.clearCache(true);
+            wv.clearHistory();
+            wv.getSettings().setJavaScriptEnabled(true);
+            wv.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            wv.setWebViewClient(wvc);
+            return wv;
         }
     }
 }

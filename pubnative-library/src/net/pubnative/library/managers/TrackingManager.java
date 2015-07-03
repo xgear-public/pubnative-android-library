@@ -7,9 +7,6 @@ import net.pubnative.library.managers.task.InvokeLinkTask;
 import net.pubnative.library.managers.task.InvokeLinkTask.InvokeLinkTaskListener;
 import net.pubnative.library.model.NativeAdModel;
 import net.pubnative.library.util.IdUtil;
-
-import org.droidparts.net.http.HTTPResponse;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -129,18 +126,11 @@ public class TrackingManager implements InvokeLinkTaskListener
     }
 
     @Override
-    public void onInvokeLinkTaskFinished(HTTPResponse response, InvokeLinkTask task)
+    public void onInvokeLinkTaskFinished(InvokeLinkTask task)
     {
-        TrackingManager.putToSharedSet(task.getContext(), CONFIRMED_URLS_SET, task.link);
-        TrackingManager.removeFromSharedSet(task.getContext(), PENDING_URLS_SET, task.link);
+        TrackingManager.putToSharedSet(task.context, CONFIRMED_URLS_SET, task.link);
+        TrackingManager.removeFromSharedSet(task.context, PENDING_URLS_SET, task.link);
         isTracking = false;
-        TrackingManager.trackNext(task.getContext());
-    }
-
-    @Override
-    public void onInvokeLinkTaskFailed(Exception exception, InvokeLinkTask task)
-    {
-        isTracking = false;
-        TrackingManager.trackNext(task.getContext());
+        TrackingManager.trackNext(task.context);
     }
 }

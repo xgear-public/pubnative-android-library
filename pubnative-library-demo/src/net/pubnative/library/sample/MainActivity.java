@@ -1,7 +1,5 @@
 package net.pubnative.library.sample;
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 
 import net.pubnative.library.PubnativeContract.Request;
@@ -36,7 +34,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener, 
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
         
         setContentView(R.layout.activity_main);
         

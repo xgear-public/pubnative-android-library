@@ -89,7 +89,7 @@ public class NativeAdModel extends Model implements NativeAd, TaskItemListener
 
     public void confirmBeacon(Context context, String beacon)
     {
-        if (TrackingManager.isTrackedBeacon(context, this, beacon))
+        if (!TrackingManager.isTrackedBeacon(context, this, beacon))
         {
             TrackingManager.TrackBeacon(context, this, beacon);
         }
