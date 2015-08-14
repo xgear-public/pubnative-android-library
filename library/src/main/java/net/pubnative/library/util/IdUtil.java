@@ -21,21 +21,35 @@
  */
 package net.pubnative.library.util;
 
-import java.lang.reflect.Method;
-
 import org.droidparts.util.L;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.location.LocationManager;
 
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient.Info;
+
 public class IdUtil
 {
-    public interface Callback
+    public static boolean isPackageInstalled(Context context, String pkgName)
     {
-        void didGetAdvId(String advId);
+        boolean result = false;
+        PackageManager pm = context.getPackageManager();
+        try
+        {
+            pm.getPackageInfo(pkgName, 0);
+            result = true;
+        }
+        catch (Exception e)
+        {
+            // Do nothing
+        }
+        return result;
     }
 
     public static String getPackageName(Context ctx)
@@ -57,28 +71,30 @@ public class IdUtil
         }
     }
 
-    public static void getAdvertisingId(final Context ctx, final Callback call)
+    public static boolean isTablet(Context context)
     {
-        new Thread()
+        boolean xlarge = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == 4);
+        boolean large = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE);
+        return (xlarge || large);
+    }
+
+    public static String getAndroidAdvertisingID(Context context)
+    {
+        Info adInfo = null;
+        try
         {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    Class<?> cls = Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient");
-                    Method m = cls.getMethod("getAdvertisingIdInfo", Context.class);
-                    Object adInfo = m.invoke(null, ctx);
-                    m = adInfo.getClass().getMethod("getId");
-                    String advId = (String) m.invoke(adInfo);
-                    call.didGetAdvId(advId);
-                }
-                catch (Exception e)
-                {
-                    L.v(e);
-                }
-            }
-        }.start();
+            adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
+        }
+        catch (Exception e)
+        {
+            L.v(e);
+        }
+        String androidAdvertisingID = null;
+        if (adInfo != null)
+        {
+            androidAdvertisingID = adInfo.getId();
+        }
+        return androidAdvertisingID;
     }
 
     public static Location getLastLocation(Context ctx)
